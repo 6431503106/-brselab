@@ -90,5 +90,41 @@ Use the following credentials to access the admin panel of the application:
 --
 
 ## 4. Conclusion
+```
+cd client ไปยังโปรเจคหลักเรา
+npm i
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+npm install uuid //เพิ่มมาเพิ่อจัดการ id
+npm install @emotion/react 
+----------------
+npm i react-router-dom react-icons
+npm install react-modal 
+npm install @mui/material //เพิ่มมาใหม่
+npm install @emotion/styled //เพิ่มมาใหม่
+npm run dev
+----------------
+cd.. ให้มาหน้าsparktech-youtube
+npm i concurrently
+```
 
-----
+----------------------------------------- server--------------------------------------------ทำหน้า server
+```
+npm install mongoose
+cd.. ไปยังหน้าหลัก
+npm init -y
+cd server
+npm i npm i bcryptjs
+npm i express mongoose dotenv
+npm install -D nodemon
+npm start
+npm i jsonwebtoken แล้วเพิ่มในหน้า controllers (import jwt from 'jsonwebtoken') เพื่อเรียกใช้
+npm install passport-google-oauth20 express-session passport axios
+npm install joi
+npm install csv-parser fs
+
+
+ของแดน ทำหน้าหลัก
+-npm install antd 
+-npm install bootstrap
+```
