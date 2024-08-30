@@ -90,6 +90,8 @@ Use the following credentials to access the admin panel of the application:
 --
 
 ## 4. Conclusion
+
+## ทำหน้า client
 ```
 cd client ไปยังโปรเจคหลักเรา
 npm i
@@ -107,8 +109,7 @@ npm run dev
 cd.. ให้มาหน้าsparktech-youtube
 npm i concurrently
 ```
-
------------------------------------------ server--------------------------------------------ทำหน้า server
+## ทำหน้า server
 ```
 npm install mongoose
 cd.. ไปยังหน้าหลัก
