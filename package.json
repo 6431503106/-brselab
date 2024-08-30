@@ -1,0 +1,38 @@
+{
+  "name": "bicsmfu",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\" "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ant-design/icons": "^5.4.0",
+    "@emotion/react": "^11.13.0",
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@mui/material": "^5.15.15",
+    "antd": "^5.20.1",
+    "axios": "^1.7.4",
+    "bootstrap": "^5.3.3",
+    "concurrently": "^8.2.2",
+    "csv-parser": "^3.0.0",
+    "mongoose": "^8.3.0",
+    "node-cron": "^3.0.3",
+    "react-modal": "^3.16.1",
+    "shortid": "^2.2.16",
+    "sweetalert2": "^11.12.4"
+  },
+  "description": " npm unstall passport-google-oauth20 express-session passport --save  and npm install axios , install at frontend ",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/6431503106/bics_LAB_SE.git"
+  },
+  "bugs": {
+    "url": "https://github.com/6431503106/bics_LAB_SE/issues"
+  },
+  "homepage": "https://github.com/6431503106/bics_LAB_SE#readme"
+}
