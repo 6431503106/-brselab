@@ -124,22 +124,35 @@ const borrowProduct = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (order) {
     const currentDate = new Date();
-    currentDate.setHours(currentDate.getHours() + 0); // เปลี่ยนเป็นเวลา UTC+7
+    currentDate.setHours(currentDate.getHours() + 0); // Adjust to UTC+7
 
+    // Set the borrowing date to the current date
     order.borrowingDate = currentDate;
 
-    const returnDate = new Date(currentDate); // ใช้ currentDate ที่ปรับเวลาแล้ว
-    returnDate.setDate(returnDate.getDate() + 7); // เพิ่ม 7 วันตามเงื่อนไขการคืนสินค้า
+    // Calculate previousReturnDate by adding 6 days to the borrowing date
+    const previousReturnDate = new Date(currentDate);
+    previousReturnDate.setDate(previousReturnDate.getDate() + 6); // 7 days in total
+    order.previousReturnDate = previousReturnDate;
+
+    // Calculate returnDate by adding 7 days to the borrowing date
+    const returnDate = new Date(currentDate);
+    returnDate.setDate(returnDate.getDate() + 6);
     order.returnDate = returnDate;
 
     const updatedOrder = await order.save();
 
-    res.json(updatedOrder);
+    // Respond with the updated order, including both return dates
+    res.json({
+      ...updatedOrder._doc,
+      previousReturnDate: order.previousReturnDate,
+      returnDate: order.returnDate,
+    });
   } else {
     res.status(404);
     throw new Error("Order Not Found");
   }
 });
+
 
 const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
@@ -169,7 +182,6 @@ const transporter = nodemailer.createTransport({
     user: process.env.MAIL_USER,
     pass: process.env.MAIL_PASSWORD 
   },
-  debug: true, // enable debug output
   logger: true, // log information
 });
 
@@ -183,7 +195,7 @@ export const checkUpcomingReturnDates = async () => {
 
   const now = new Date();
   const upcomingDate = new Date(now);
-  upcomingDate.setDate(upcomingDate.getDate() + 3); // เพิ่ม n+1 วันสำหรับการตรวจสอบวันคืน
+  upcomingDate.setDate(upcomingDate.getDate() + 3); // เพิ่ม n วันสำหรับการตรวจสอบวันคืน
 
   try {
     const orders = await Order.find({
@@ -272,6 +284,7 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
       if (product.countInStock <= 0) {
         return res.status(400).json({ message: "Not enough stock to confirm the order" });
       }
+      order.notificationSent = false;
 
     } else if (status === "Borrowing" && item.status === "Confirm") {
       if (product.countInStock <= 0) {
@@ -284,16 +297,18 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
       now.setHours(now.getHours() + 0); // Adjust to UTC+7
       order.borrowingInformation.borrowingDate = now;
       const returnDate = new Date(now);
-      returnDate.setDate(returnDate.getDate() + 7);  // Create return date 7 days after borrowing
+      returnDate.setDate(returnDate.getDate() + 6);  // Create return date 7 days after borrowing
       order.borrowingInformation.returnDate = returnDate;
+
+      order.notificationSent = false;
 
     } else if (status === "Return" && item.status === "Borrowing") {
       product.countInStock += item.qty;
 
       // Adjust return dates
-      const previousReturnDate = new Date();
-      previousReturnDate.setHours(previousReturnDate.getHours() + 0);
-      order.borrowingInformation.previousReturnDate = previousReturnDate;
+      const returnedDate = new Date();
+      returnedDate.setHours(returnedDate.getHours() + 0);
+      order.borrowingInformation.returnedDate = returnedDate;
       order.borrowingInformation.returnDate = null; //คืนมาแล้ววันคืนให้เป็น Null
 
     } else if (status === "Cancel" && item.status !== "Cancel") {
@@ -306,9 +321,7 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
         if (order.borrowingInformation.borrowingDate) {
           const borrowingDate = new Date(order.borrowingInformation.borrowingDate);
           const returnDate = new Date(borrowingDate);
-          returnDate.setDate(borrowingDate.getDate() + 7);  // เพิ่ม 7 วันจาก borrowingDate
-          
-          order.borrowingInformation.returnDate = returnDate;
+          returnDate.setDate(borrowingDate.getDate() + 6);  // เพิ่ม 7 วันจาก borrowingDate
         } else {
           // กรณีไม่มีวันที่ยืม ให้ทำการจัดการตามที่จำเป็น (อาจจะกำหนด borrowingDate ใหม่หรือแจ้งเตือน)
           console.error("Borrowing date is not set.");

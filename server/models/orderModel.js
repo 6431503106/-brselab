@@ -27,7 +27,8 @@ const OrderSchema = mongoose.Schema(
       },
     ],
     borrowingInformation: {
-      borrowingDate: { type: Date },
+      borrowingDate: { type: Date, required: true },
+      returnedDate: { type: Date },
       returnDate: { type: Date },
       previousReturnDate: { type: Date },
       canceledDate: { type: Date },

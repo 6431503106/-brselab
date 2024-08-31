@@ -200,7 +200,7 @@ export default function OrderListScreen() {
                   {new Date(item.order.borrowingInformation?.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
                 </td>
                 <td className='px-7 py-3 whitespace-nowrap border'>
-                  {new Date(item.order.borrowingInformation?.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
+                  {new Date(item.order.borrowingInformation?.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
                 </td>
                 <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Pending' ? 'text-yellow-500' : ''}`}>{item.status}</td>
                 <td className='px-7 py-3 whitespace-nowrap border'>
@@ -263,7 +263,7 @@ export default function OrderListScreen() {
       <p><span className="font-semibold">User Name:</span> {selectedOrder.user?.name}</p>
       <p><span className="font-semibold">Request Date:</span> {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
       <p><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-      <p><span className="font-semibold">Return Date:</span> {selectedOrder.borrowingInformation?.returnDate ? new Date(selectedOrder.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+      <p><span className="font-semibold">Return Date:</span> {selectedOrder.borrowingInformation?.previousReturnDate ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
       <p><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
       <div className="mt-4">
               <div className="mb-4">

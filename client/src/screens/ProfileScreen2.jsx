@@ -193,7 +193,7 @@ export default function ProfileScreen() {
             <table className="min-w-full divide-y divide-gray-200 border">
                     <thead>
                         <tr>
-                            <th className="px-4 py-3 bg-gray-50 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider border">ID</th>
+                            {/*<th className="px-4 py-3 bg-gray-50 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider border">ID</th>*/}
                             <th className="px-4 py-3 bg-gray-50 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider border">Product Name</th>
                             <th className="px-4 py-3 bg-gray-50 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider border">Quantity</th>
                             <th className="px-4 py-3 bg-gray-50 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider border">Borrow Date</th>
@@ -205,23 +205,25 @@ export default function ProfileScreen() {
                     <tbody>
                     {paginatedOrders.map(item => (
                             <tr key={`${item.order._id}-${item._id}`} className="my-4">
-                                <td className='px-7 py-3 whitespace-nowrap border'>{item.order._id.slice(-3)}</td>
+                                {/*<td className='px-7 py-3 whitespace-nowrap border text-center '>{item.order._id.slice(-3)}</td>*/}
                                 <td className='px-7 py-3 text-center border'>{item.name}</td>
                                 <td className='px-7 py-3 whitespace-nowrap text-center border '>{item.qty}</td>
-                                <td className='px-7 py-3 whitespace-nowrap border'>
+                                <td className='px-7 py-3 whitespace-nowrap text-center border'>
                                     {item.order.borrowingInformation?.borrowingDate
                                     ? new Date(item.order.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
                                     : '-'}
                                 </td>
-                                <td className='text-center px-7 py-3 whitespace-nowrap border'>
-                                    {item.order.borrowingInformation?.returnDate
+                                <td className='px-7 py-3 whitespace-nowrap text-center border'>
+                                {item.order.borrowingInformation?.returnedDate
+                                    ? new Date(item.order.borrowingInformation.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                                    : item.order.borrowingInformation?.returnDate
                                     ? new Date(item.order.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                    : (item.order.borrowingInformation?.previousReturnDate
-                                        ? new Date(item.order.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                        : 'Not returned')}
+                                    : item.order.borrowingInformation?.previousReturnDate
+                                    ? new Date(item.order.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                                    : 'Not returned'}
                                 </td>
-                                <td className={`text-center px-7 py-3 whitespace-nowrap  ${getStatusClass(item.status)}`}>{item.status}</td>
-                                <td className='text-back-500'>
+                                <td className={`text-center px-7 py-3  text-center whitespace-nowrap  ${getStatusClass(item.status)}`}>{item.status}</td>
+                                <td className='text-back-500 text-center '>
                                     <button className='py-2 px-10 whitespace-nowrap' onClick={() => openModal(item.order, item)}>
                                     <AiOutlineMore />
                                     </button>
@@ -281,10 +283,17 @@ export default function ProfileScreen() {
                             <p className="mb-2"><span className="font-semibold">Status:</span> {selectedItem.status}</p>
                             <p className="mb-2"><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
                             <p className="mb-2"><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-                            <p className="mb-4"><span className="font-semibold">Returned Date:</span> {selectedOrder.borrowingInformation?.previousReturnDate 
-        ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) 
-        : "You have not returned items."}
-      </p>
+                            <p className="mb-4">
+                            <span className="font-semibold">Return Date: </span>
+                            {selectedOrder.status === "Cancel"
+                                ? "You have not returned items."
+                                :selectedOrder.borrowingInformation?.returnedDate 
+                                ? new Date(selectedOrder.borrowingInformation.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                                : selectedOrder.borrowingInformation?.previousReturnDate 
+                                ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                                : "You have not returned items."
+                            }
+                            </p>
                             <div className="mt-4">
                                 {selectedItem.status !== 'Cancel' && selectedItem.status !== 'Confirm' && selectedItem.status !== 'Return' && selectedItem.status !== 'Borrowing' && selectedItem.status !== 'Non-returnable' ? (
                                     <button

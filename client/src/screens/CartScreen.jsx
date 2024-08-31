@@ -48,14 +48,18 @@ export default function CartScreen() {
       const borrowingDateObject = new Date(borrowingDate);
       const borrowingDateInUTCPlus7 = new Date(borrowingDateObject.getTime() + 0);
   
-      // Calculate returnDate by adding 7 days to adjusted borrowingDate
+      // Calculate previousReturnDate by adding 7 days to adjusted borrowingDate
+      const previousReturnDate = new Date(borrowingDateInUTCPlus7);
+      previousReturnDate.setDate(previousReturnDate.getDate() + 6);
+
       const returnDate = new Date(borrowingDateInUTCPlus7);
-      returnDate.setDate(returnDate.getDate() + 7);
+      returnDate.setDate(returnDate.getDate() + 6);
   
       const borrowingInformationData = {
         reason,
         borrowingDate: borrowingDateInUTCPlus7.toISOString(),
-        returnDate: returnDate.toISOString(),
+        previousReturnDate: previousReturnDate.toISOString(),
+        returnDate: returnDate.toISOString(), 
       };
   
       const res = await createOrder({
@@ -146,7 +150,7 @@ export default function CartScreen() {
 
             <div className="mb-4">
               <label htmlFor="borrowingDate" className="text-gray-700">
-                Borrowing Date: Month/Day/Year
+                Month/Day/Year. Borrowing Date:
               </label>
               <input
                 type="date"
@@ -159,12 +163,12 @@ export default function CartScreen() {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="returnDate" className="text-gray-700">
-                Return Date: Month/Day/Year
+              <label htmlFor="previousReturnDate" className="text-gray-700">
+                Month/Day/Year. Previous Return Date:
               </label>
               <p>
                 {borrowingDate
-                  ? new Date(new Date(borrowingDate).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('us', { month: '2-digit', day: '2-digit', year: 'numeric' })
+                  ? new Date(new Date(borrowingDate).getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('us', { month: '2-digit', day: '2-digit', year: 'numeric' })
                   : ''}
               </p>
             </div>

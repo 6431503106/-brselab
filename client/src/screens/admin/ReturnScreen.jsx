@@ -64,16 +64,25 @@ export default function OrderListScreen() {
     }
 
     try {
-        await updateOrderStatus({
+        const response = await updateOrderStatus({
             orderId: selectedOrder._id,
             itemId: selectedItem._id,
-            status: "Return"
+            status: "Confirm"
         });
-        toast.success(`Status updated to Return`);
-        refetch();
-        closeModal();
+
+        // ตรวจสอบสถานะการตอบกลับจากเซิร์ฟเวอร์
+        if (response.status === 400) {
+            // แสดงข้อความข้อผิดพลาดหากสถานะคือ 400
+            toast.error('Not enough stock to confirm the order');
+        } else {
+            // แสดงข้อความสำเร็จเมื่อสถานะไม่ใช่ 400
+            toast.success('Status updated to Confirm');
+            refetch();  // Refetch to update the UI with latest data
+            closeModal();  // Close the modal
+        }
     } catch (error) {
-        toast.error(error.message);
+        // แสดงข้อความข้อผิดพลาดที่ได้รับจากเซิร์ฟเวอร์หรือข้อความข้อผิดพลาดทั่วไป
+        toast.error(error.response?.data?.message || 'An unexpected error occurred.');
     }
 };
 
@@ -167,13 +176,15 @@ const handleDeleteOrderItem = async (orderId, itemId) => {
                 <td className='px-7 py-3 whitespace-nowrap border '>
                   {new Date(item.order.borrowingInformation?.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
                 </td>
-                <td className='px-7 py-3 whitespace-nowrap border '>
-                                    {item.order.borrowingInformation?.returnDate
-                                    ? new Date(item.order.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                    : (item.order.borrowingInformation?.previousReturnDate
-                                        ? new Date(item.order.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                        : 'Not returned')}
-                                </td>
+                <td className='px-7 py-3 whitespace-nowrap border'>
+                  {item.order.borrowingInformation?.returnedDate
+                    ? new Date(item.order.borrowingInformation.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                    : item.order.borrowingInformation?.returnDate
+                    ? new Date(item.order.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                    : item.order.borrowingInformation?.previousReturnDate
+                    ? new Date(item.order.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                    : 'Not returned'}
+                </td>
                 <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Return' ? 'text-neutral-500' : ''}`}>{item.status}</td>
                 <td className='px-7 py-3 whitespace-nowrap border'>
                       <button className='py-2 px-3 whitespace-nowrap' onClick={() => openModal(item.order, item)}>
@@ -234,9 +245,25 @@ const handleDeleteOrderItem = async (orderId, itemId) => {
       <p><span className="font-semibold">Order ID:</span> {selectedOrder._id}</p>
       <p><span className="font-semibold">User Name:</span> {selectedOrder.user?.name}</p>
       <p><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
-      <p><span className="font-semibold">Return Date:</span> {selectedOrder.borrowingInformation?.returnDate ? new Date(selectedOrder.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+      <p className="font-semibold"><span className="font-semibold">Borrow Date: </span> 
+      {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+      <p className="font-semibold"><span className="font-semibold">Return Date: </span>
+      {selectedOrder.status === "Cancel"
+          ? "You have not returned items."
+          :selectedOrder.borrowingInformation?.returnedDate 
+          ? new Date(selectedOrder.borrowingInformation.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : selectedOrder.borrowingInformation?.previousReturnDate 
+          ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : "You have not returned items."
+      }
+      </p>
       <div className="mt-4">
-            
+      <button
+                  onClick={handleUpdateStatus}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 mt-2 rounded"
+                >
+                  Confirm for borrow again
+                </button>
             </div>
             </div>
             <div className="md:w-2/3 bg-gray-100 p-5 mt-5 rounded-md" style={{ maxHeight: '450px', overflowY: 'auto' }}>
