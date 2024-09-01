@@ -214,11 +214,7 @@ export default function ProfileScreen() {
                                     : '-'}
                                 </td>
                                 <td className='px-7 py-3 whitespace-nowrap text-center border'>
-                                {item.order.borrowingInformation?.returnedDate
-                                    ? new Date(item.order.borrowingInformation.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                    : item.order.borrowingInformation?.returnDate
-                                    ? new Date(item.order.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                    : item.order.borrowingInformation?.previousReturnDate
+                                {item.order.borrowingInformation?.previousReturnDate
                                     ? new Date(item.order.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
                                     : 'Not returned'}
                                 </td>
@@ -285,11 +281,7 @@ export default function ProfileScreen() {
                             <p className="mb-2"><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
                             <p className="mb-4">
                             <span className="font-semibold">Return Date: </span>
-                            {selectedOrder.status === "Cancel"
-                                ? "You have not returned items."
-                                :selectedOrder.borrowingInformation?.returnedDate 
-                                ? new Date(selectedOrder.borrowingInformation.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                : selectedOrder.borrowingInformation?.previousReturnDate 
+                            {selectedOrder.borrowingInformation?.previousReturnDate 
                                 ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
                                 : "You have not returned items."
                             }
