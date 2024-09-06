@@ -68,21 +68,27 @@ export default function ProductScreen() {
                             <span className="text-yellow-500 mr-1">{product.rating}</span>
                             <span className="text-gray-500">({product.numReviews} reviews)</span>
                         </div>
-                        
-                        <p className="text-gray-700 mt-2">Available: {product.countInStock}</p>
+
+                        <p className="text-gray-700 mt-2">
+                            {product.countInStock > 0 ? `Available: ${product.countInStock}` : 'Unavailable'}
+                        </p>
                         <div className="mt-4">
-                            {/* <label htmlFor="quantity" className="text-gray-700">Quantity:</label>
-                            <select
-                                id="quantity"
-                                className="bg-white border border-gray-300 p-2 rounded-md mt-2"
-                                onChange={e => setQty(e.target.value)}
-                            >
-                                {[...Array(product.countInStock).keys()].map(num => (
-                                    <option key={num + 1} value={num + 1}>
-                                        {num + 1}
-                                    </option>
-                                ))}
-                            </select> */}
+                            {product.countInStock > 0 && (
+                                <>
+                                    <label htmlFor="quantity" className="text-gray-700">Quantity:</label>
+                                    <select
+                                        id="quantity"
+                                        className="bg-white border border-gray-300 p-1.5 rounded-md mt-2"
+                                        onChange={e => setQty(e.target.value)}
+                                    >
+                                        {[...Array(product.countInStock).keys()].map(num => (
+                                            <option key={num + 1} value={num + 1}>
+                                                {num + 1}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </>
+                            )}
                         </div>
                         <div className="justify-between">
                             {product.countInStock > 0 ? (

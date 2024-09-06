@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateProductMutation } from '../../slices/productsApiSlice';
-import { useGetCategoriesQuery, useCreateCategoryMutation } from '../../slices/categoriesApiSlice';
+import { useGetCategoriesQuery, useCreateCategoryMutation, useDeleteCategoryMutation } from '../../slices/categoriesApiSlice';
 import { toast } from 'react-toastify';
+import Compressor from 'compressorjs';
 
 export default function ProductCreateScreen() {
     const navigate = useNavigate();
     const [createProduct, { isLoading: loadingCreate }] = useCreateProductMutation();
     const { data: categories, isLoading: loadingCategories, error } = useGetCategoriesQuery();
     const [createCategory] = useCreateCategoryMutation();
+    const [deleteCategory] = useDeleteCategoryMutation();
 
     const [name, setName] = useState('');
     const [image, setImage] = useState('');
@@ -27,7 +29,6 @@ export default function ProductCreateScreen() {
     const submitHandler = async (e) => {
         e.preventDefault();
 
-        // Validation
         if (!name || !image || !brand || !category || !description || countInStock <= 0) {
             toast.error('Please fill in all required fields.');
             return;
@@ -53,12 +54,50 @@ export default function ProductCreateScreen() {
         if (newCategoryName.trim()) {
             try {
                 const newCategory = await createCategory({ name: newCategoryName }).unwrap();
-                setCategory(newCategory._id);  // Set new category as the selected one
+                setCategory(newCategory._id);
                 toast.success('Category Created');
-                setNewCategoryName('');  // Clear the input field
+                setNewCategoryName('');
             } catch (error) {
                 toast.error(error?.data?.message || error.message);
             }
+        }
+    };
+
+    const deleteCategoryHandler = async (categoryId) => {
+        if (window.confirm('Are you sure you want to delete this category?')) {
+            try {
+                await deleteCategory(categoryId).unwrap();
+                toast.success('Category Deleted');
+                // Refresh the category list or update state
+            } catch (error) {
+                toast.error(error?.data?.message || error.message);
+            }
+        }
+    };
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 1048576) { // 1MB size limit
+                alert("File is too large. Please select a file smaller than 1MB.");
+                return;
+            }
+            
+            new Compressor(file, {
+                quality: 0.8,
+                maxWidth: 800,
+                success: (compressedResult) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setImage(reader.result); // Convert to Base64
+                    };
+                    reader.readAsDataURL(compressedResult);
+                },
+                error: (err) => {
+                    console.error(err);
+                    toast.error('Image compression failed.');
+                }
+            });
         }
     };
 
@@ -98,16 +137,7 @@ export default function ProductCreateScreen() {
                         id="image"
                         name="image"
                         accept="image/*"
-                        onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                    setImage(reader.result); // Convert to Base64
-                                };
-                                reader.readAsDataURL(file);
-                            }
-                        }}
+                        onChange={handleImageUpload}
                         className="w-full border border-gray-300 p-2 rounded-md"
                         required
                     />
@@ -129,40 +159,48 @@ export default function ProductCreateScreen() {
                 </div>
 
                 <div className="mb-4">
-                        <label htmlFor="category" className="block font-medium">
-                            Category:
-                        </label>
-                        <select
-                            id="category"
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
-                            required
+                    <label htmlFor="category" className="block font-medium">
+                        Category:
+                    </label>
+                    <select
+                        id="category"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+                        required
+                    >
+                        {categories && categories.map((cat) => (
+                            <option key={cat._id} value={cat._id}>
+                                {cat.name}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="flex mt-2">
+                        <input
+                            type="text"
+                            placeholder="New Category Name"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight flex-grow"
+                        />
+                        <button
+                            type="button"
+                            className="bg-gray-500 text-white py-2 px-4 rounded-md ml-2"
+                            onClick={createCategoryHandler}
                         >
-                            {categories && categories.map((cat) => (
-                                <option key={cat._id} value={cat._id}>
-                                    {cat.name}
-                                </option>
-                            ))}
-                        </select>
-                        <div className="flex mt-2">
-                            <input
-                                type="text"
-                                placeholder="New Category Name"
-                                value={newCategoryName}
-                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight flex-grow"
-                            />
+                            Add Category
+                        </button>
+                        {categories && categories.length > 0 && (
                             <button
                                 type="button"
-                                className="bg-gray-500 text-white py-2 px-4 rounded-md ml-2"
-                                onClick={createCategoryHandler}
+                                className="bg-red-500 text-white py-2 px-4 rounded-md ml-2"
+                                onClick={() => deleteCategoryHandler(categories[0]._id)}
                             >
-                                Add Category
+                                Delete Category
                             </button>
-                        </div>
+                        )}
+                    </div>
                 </div>
-
 
                 <div className="mb-4">
                     <label htmlFor="countInStock" className="block font-medium">

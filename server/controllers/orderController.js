@@ -351,10 +351,10 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
     let message;
     let subject;
 
-    /*if (status === "Confirm") {
+    if (status === "Confirm") {
       subject = 'Status notification from SE LAB';
       message = `Dear ${order.user.name},\n\nYour request for the ${item.name} has been confirmed!\n\nBorrowing Date: ${formattedBorrowingDate}\n\nThank you.`;
-    } else*/ if (status === "Cancel") {
+    } else if (status === "Cancel") {
       subject = 'Status notification from SE LAB';
       message = `Dear ${order.user.name},\n\nYour request has been canceled.\n\nProduct name: ${item.name}\n\nIf you have any questions, please contact us.`;
     } else if (status === "Non-returnable") {

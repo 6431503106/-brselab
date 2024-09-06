@@ -293,7 +293,7 @@ export default function OrderListScreen() {
               <p><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
               <p><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
               <p><span className="font-semibold">Return Date:</span> {selectedOrder.borrowingInformation?.previousReturnDate ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-              <div className="mt-4">
+              <div className="mt-4 flex gap-5">
                 <button
                   onClick={handleUpdateStatus}
                   className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 mt-2 rounded"
@@ -303,7 +303,7 @@ export default function OrderListScreen() {
                 {selectedItem.status !== 'Cancel' && selectedItem.status !== 'Return' && selectedItem.status !== 'Borrowing' && selectedItem.status !== 'Non-returnable' ? (
                   <button
                     onClick={handleUpdateStatusCancel}
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg"
+                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 mt-2 rounded"
                   >
                     Cancel Request
                   </button>

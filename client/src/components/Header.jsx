@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { useLogoutMutation } from '../slices/userApiSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -79,9 +79,11 @@ const Header = () => {
         </Menu>
     );
 
-    
     const categoriesMenu = (
         <Menu>
+            <Menu.Item key="all-products">
+                <Link to="/">All Products</Link>
+            </Menu.Item>
             {loadingCategories ? (
                 <Menu.Item key="loading">
                     <Spin size="small" /> Loading Categories...
@@ -116,16 +118,16 @@ const Header = () => {
                     {userInfo && (
                         <>
                             <li className="nav-item">
-                            <Dropdown overlay={categoriesMenu} trigger={['click']}>
-                                <a className="nav-link " onClick={e => e.preventDefault()}>
-                                <ProductOutlined /> Category 
-                                </a>
-                            </Dropdown>
+                                <Dropdown overlay={categoriesMenu} trigger={['click']}>
+                                    <a className="nav-link" onClick={e => e.preventDefault()}>
+                                        <ProductOutlined /> Category
+                                    </a>
+                                </Dropdown>
                             </li>
 
                             <li className="nav-item">
                                 <Dropdown overlay={accountMenu} trigger={['click']}>
-                                    <a className="nav-link  " onClick={e => e.preventDefault()}>
+                                    <a className="nav-link" onClick={e => e.preventDefault()}>
                                         <UserOutlined /> {userInfo.name}
                                     </a>
                                 </Dropdown>
@@ -135,7 +137,7 @@ const Header = () => {
                 </ul>
             </nav>
             <div className="menu">
-            <Menu 
+                <Menu 
                     defaultSelectedKeys={['1']}
                     mode="inline"
                     theme="dark"
@@ -146,22 +148,22 @@ const Header = () => {
                         <div className={`brand-text text-white ${isSidebarOpen ? '' : 'hide'}`}>SE LAB MFU</div>
                     </div>
                     {userInfo && userInfo.isAdmin && (
-                     <Menu.SubMenu key="sub2" icon={<AppstoreOutlined />} title="Admin">
-                        <Menu.SubMenu key="sub3" icon={<ToolOutlined />} title="Management"> 
-                         <Menu.Item key="9"><Link to="/admin/users">Users lists</Link></Menu.Item>
-                         <Menu.Item key="10"><Link to="/admin/products">Products lists</Link></Menu.Item>
+                        <Menu.SubMenu key="sub2" icon={<AppstoreOutlined />} title="Admin">
+                            <Menu.SubMenu key="sub3" icon={<ToolOutlined />} title="Management"> 
+                                <Menu.Item key="9"><Link to="/admin/users">Users lists</Link></Menu.Item>
+                                <Menu.Item key="10"><Link to="/admin/products">Products lists</Link></Menu.Item>
+                            </Menu.SubMenu>
+                            <Menu.SubMenu key="sub4" icon={<UnorderedListOutlined />} title="Request lists"> 
+                                <Menu.Item key="11"><Link to="/admin/orders">Pending</Link></Menu.Item>
+                                <Menu.Item key="12"><Link to="/admin/confirm">Confirm</Link></Menu.Item>
+                                <Menu.Item key="15"><Link to="/admin/borrowing">Borrowing</Link></Menu.Item>
+                                <Menu.Item key="13"><Link to="/admin/return">Return</Link></Menu.Item>
+                                <Menu.Item key="14"><Link to="/admin/cancel">Cancel</Link></Menu.Item>
+                            </Menu.SubMenu>
+                            <Menu.Item key="6" icon={<MailOutlined />}>
+                                <Link to="/admin/manageMessages"> Messages </Link>
+                            </Menu.Item>
                         </Menu.SubMenu>
-                        <Menu.SubMenu key="sub4" icon={<UnorderedListOutlined />} title="Request lists"> 
-                         <Menu.Item key="11"><Link to="/admin/orders">Pending</Link></Menu.Item>
-                         <Menu.Item key="12"><Link to="/admin/confirm">Confirm</Link></Menu.Item>
-                         <Menu.Item key="15"><Link to="/admin/borrowing">Borrowing</Link></Menu.Item>
-                         <Menu.Item key="13"><Link to="/admin/return">Return</Link></Menu.Item>
-                         <Menu.Item key="14"><Link to="/admin/cancel">Cancel</Link></Menu.Item>
-                        </Menu.SubMenu>
-                        <Menu.Item key="6" icon={<MailOutlined />}>
-                            <Link to="/admin/manageMessages"> Messages </Link>
-                        </Menu.Item>
-                     </Menu.SubMenu>
                     )}
                     <Menu.Item key="1" icon={<HomeOutlined />}>
                         <Link to="/">
@@ -176,18 +178,18 @@ const Header = () => {
                             </Link>
                         </Menu.Item>
                     )}
-                    {userInfo &&  (
+                    {userInfo && (
                         <Menu.Item key="5" icon={<UserOutlined />}>
                             <Link to="/profile2">
                                 My Borrowing
                             </Link>
                         </Menu.Item>
                     )}
-                    {userInfo &&  (
+                    {userInfo && (
                         <Menu.Item key="7" icon={<CommentOutlined />}>
-                         <Link to="/contactUs" className="text-white flex items-center">
-                            Contact
-                         </Link>
+                            <Link to="/contactUs" className="text-white flex items-center">
+                                Contact
+                            </Link>
                         </Menu.Item>
                     )}
                     {!userInfo && (
@@ -197,7 +199,6 @@ const Header = () => {
                             </Link>
                         </Menu.Item>
                     )}
-                    
                 </Menu>
             </div>
         </>
@@ -205,4 +206,3 @@ const Header = () => {
 }
 
 export default Header;
-

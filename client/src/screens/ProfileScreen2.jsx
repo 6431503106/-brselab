@@ -280,11 +280,11 @@ export default function ProfileScreen() {
                             <p className="mb-2"><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
                             <p className="mb-2"><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
                             <p className="mb-4">
-                            <span className="font-semibold">Return Date: </span>
-                            {selectedOrder.borrowingInformation?.previousReturnDate 
-                                ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                : "You have not returned items."
-                            }
+                                <span className="font-semibold">Return Date: </span>
+                                {selectedOrder.borrowingInformation?.previousReturnDate 
+                                    ? (selectedItem.status === 'Non-returnable' ? 'No return necessary' : new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }))
+                                    : (selectedItem.status === 'Non-returnable' ? 'No return necessary' : "You have not returned items.")
+                                }
                             </p>
                             <div className="mt-4">
                                 {selectedItem.status !== 'Cancel' && selectedItem.status !== 'Confirm' && selectedItem.status !== 'Return' && selectedItem.status !== 'Borrowing' && selectedItem.status !== 'Non-returnable' ? (
