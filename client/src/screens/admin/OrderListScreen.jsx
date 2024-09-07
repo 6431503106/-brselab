@@ -174,12 +174,11 @@ export default function OrderListScreen() {
                 </div>
       </div>
       <div className="content-table ">
-        <table className="min-w-full divide-y border-collapse border border-gray-300">
+        <table className="min-w-full divide-y  border border-gray-300">
           <thead>
             <tr className="bg-gray-200">
-              <th className="px-6 py-3 bg-gray-100 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border">Product Name</th>
+              <th className="px-2 py-3 bg-gray-100 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border">Product Name</th>
               <th className="px-6 py-3 bg-gray-100 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border">User Name</th>
-              <th className="px-6 py-3 bg-gray-100 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border">Reason</th>
               <th className="px-6 py-3 bg-gray-100 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border">Request Date</th>
               <th className="px-6 py-3 bg-gray-100 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border">Borrow Date</th>
               <th className="px-6 py-3 bg-gray-100 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border">Return Date</th>
@@ -188,30 +187,33 @@ export default function OrderListScreen() {
             </tr>
           </thead>
           <tbody>
-            {paginatedOrders.map(item => (
-              <tr key={`${item.order._id}-${item._id}`} className='text-center'>
-                <td className='px-7 py-3 whitespace-nowrap border'>{item.name}</td>
-                <td className='px-7 py-3 whitespace-nowrap border'>{item.order.user?.name}</td>
-                <td className='px-7 py-3 whitespace-nowrap border'>{item.order.borrowingInformation?.reason || 'N/A'}</td> {/* Display Reason here */}
-                <td className='px-7 py-3 whitespace-nowrap border'>
-                  {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className='px-7 py-3 whitespace-nowrap border '>
-                  {new Date(item.order.borrowingInformation?.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className='px-7 py-3 whitespace-nowrap border'>
-                  {new Date(item.order.borrowingInformation?.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Pending' ? 'text-yellow-500' : ''}`}>{item.status}</td>
-                <td className='px-7 py-3 whitespace-nowrap border'>
-                  <button className='py-2 px-2 whitespace-nowrap' onClick={() => openModal(item.order, item)}>
-                    <AiOutlineMore />
-                  </button>
-                  <button
-                  className='text-black rounded-md px-3 py-1 mx-1 hover:bg-red-700'
-                  onClick={() => handleDeleteOrderItem(item.order._id, item.itemId)}
-                >
-                  <MdOutlineDelete />
+  {paginatedOrders.map(item => (
+    <tr key={`${item.order._id}-${item._id}`} className='text-center'>
+      <td className='px-7 py-3 whitespace-nowrap border'>{item.name}</td>
+      <td className='px-7 py-3 whitespace-nowrap border'>{item.order.user?.name}</td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
+      </td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {item.borrowingDate
+          ? new Date(item.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : 'N/A'}
+      </td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {item.returnDate
+          ? new Date(item.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : 'N/A'}
+      </td>
+      <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Pending' ? 'text-yellow-500' : ''}`}>{item.status}</td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        <button className='py-2 px-2 whitespace-nowrap' onClick={() => openModal(item.order, item)}>
+          <AiOutlineMore />
+        </button>
+        <button
+          className='text-black rounded-md px-3 py-1 mx-1 hover:bg-red-700'
+          onClick={() => handleDeleteOrderItem(item.order._id, item.itemId)}
+        >
+          <MdOutlineDelete />
                 </button>
                 </td>
               </tr>
@@ -258,14 +260,12 @@ export default function OrderListScreen() {
         <div className="flex flex-col md:flex-row justify-center items-start">
             <div className="md:w-1/3 p-4">
             <h2 className="text-2xl font-bold mb-4">Order Details</h2>
-      <strong><span className="font-semibold">Item Name:</span> {selectedItem.name}</strong>
-      <p><span className="font-semibold">Order ID:</span> {selectedOrder._id}</p>
-      <p><span className="font-semibold">User Name:</span> {selectedOrder.user?.name}</p>
-      <p><span className="font-semibold">Request Date:</span> {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-      <p><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-      <p><span className="font-semibold">Return Date:</span> {selectedOrder.borrowingInformation?.previousReturnDate ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-      <p><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
-      <div className="mt-4">
+        <p><span className="font-semibold">Order ID:</span> {selectedOrder._id}</p>
+        <p><span className="font-semibold">User Name:</span> {selectedOrder.user?.name}</p>
+        <p><span className="font-semibold">Borrow Date:</span> {selectedItem.borrowingDate ? new Date(selectedItem.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+        <p><span className="font-semibold">Return Date:</span> {selectedItem.returnDate ? new Date(selectedItem.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+        <p><span className="font-semibold">Reason:</span> {selectedItem.reason || 'N/A'}</p>
+        <div className="mt-4">
               <div className="mb-4">
                 <h3><span className="font-semibold">Status: </span>
                   <select
@@ -275,7 +275,6 @@ export default function OrderListScreen() {
                     <option value="Confirm">Confirm</option>
                     <option value="Cancel">Cancel</option>
                     <option value="Pending">Pending</option>
-                    <option value="Non-returnable">Non-returnable</option>
                   </select>
                 </h3>
               </div>

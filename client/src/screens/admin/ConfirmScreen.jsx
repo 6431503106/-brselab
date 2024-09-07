@@ -87,18 +87,14 @@ export default function OrderListScreen() {
             status: "Borrowing"
         });
 
-        // ตรวจสอบสถานะการตอบกลับจากเซิร์ฟเวอร์
         if (response.status === 400) {
-            // แสดงข้อความข้อผิดพลาดหากสถานะคือ 400
             toast.error('Not enough stock to confirm the order');
         } else {
-            // แสดงข้อความสำเร็จเมื่อสถานะไม่ใช่ 400
             toast.success('Status updated to Borrowing');
-            refetch();  // Refetch to update the UI with latest data
-            closeModal();  // Close the modal
+            refetch();
+            closeModal(); 
         }
     } catch (error) {
-        // แสดงข้อความข้อผิดพลาดที่ได้รับจากเซิร์ฟเวอร์หรือข้อความข้อผิดพลาดทั่วไป
         toast.error(error.response?.data?.message || 'An unexpected error occurred.');
     }
 };
@@ -124,6 +120,39 @@ export default function OrderListScreen() {
             refetch(); 
             closeModal(); 
             return `Status updated to Cancel`;
+          },
+        },
+        error: {
+          render({ data }) {
+            return data.message || "Failed to update status.";
+          },
+        },
+      });
+    } catch (error) {
+      toast.error("An unexpected error occurred.");
+    }
+  };
+
+  const handleUpdateStatusNotable = async () => {
+    if (!selectedOrder || !selectedItem) {
+      toast.error('Please select an order and item.');
+      return;
+    }
+
+    try {
+      const promise = updateOrderStatus({
+        orderId: selectedOrder._id,
+        itemId: selectedItem._id,
+        status: "Non-returnable",
+      });
+
+      await toast.promise(promise, {
+        pending: "Updating status...",
+        success: {
+          render: () => {
+            refetch(); 
+            closeModal(); 
+            return `Status updated to Non-returnable`;
           },
         },
         error: {
@@ -224,24 +253,28 @@ export default function OrderListScreen() {
                 <td className='px-7 py-3 whitespace-nowrap border'>{item.name}</td>
                 <td className='px-7 py-3 whitespace-nowrap border'>{item.order.user?.name}</td>
                 <td className='px-7 py-3 whitespace-nowrap border'>
-                  {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className='px-7 py-3 whitespace-nowrap border'>
-                  {new Date(item.order.borrowingInformation?.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className='px-7 py-3 whitespace-nowrap border'>
-                  {new Date(item.order.borrowingInformation?.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Confirm' ? 'text-green-500' : ''}`}>{item.status}</td>
-                <td className='px-3 py-3 whitespace-nowrap border'>
-                  <button className='py-2 px-1 whitespace-nowrap' onClick={() => openModal(item.order, item)}> 
-                    <AiOutlineMore />
-                  </button>
-                  <button
-                    className='text-black rounded-md px-3 py-1 mx-1 hover:bg-red-700'
-                    onClick={() => handleDeleteOrderItem(item.order._id, item.itemId)}
-                  >
-                    <MdOutlineDelete />
+        {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
+      </td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {item.borrowingDate
+          ? new Date(item.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : 'N/A'}
+      </td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {item.returnDate
+          ? new Date(item.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : 'N/A'}
+      </td>
+      <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Pending' ? 'text-yellow-500' : ''}`}>{item.status}</td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        <button className='py-2 px-2 whitespace-nowrap' onClick={() => openModal(item.order, item)}>
+          <AiOutlineMore />
+        </button>
+        <button
+          className='text-black rounded-md px-3 py-1 mx-1 hover:bg-red-700'
+          onClick={() => handleDeleteOrderItem(item.order._id, item.itemId)}
+        >
+          <MdOutlineDelete />
                   </button>
                 </td>
               </tr>
@@ -286,31 +319,38 @@ export default function OrderListScreen() {
       >
         {selectedOrder && selectedItem && (
           <div className="flex flex-col md:flex-row justify-center items-start">
-            <div className="md:w-1/3 p-4">
-              <h2 className="text-xl font-semibold mb-4">Order Details</h2>
-              <strong><span className="font-semibold">Item Name:</span> {selectedItem.name}</strong>
-              <p>{selectedOrder.user?.name}</p>
-              <p><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
-              <p><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-              <p><span className="font-semibold">Return Date:</span> {selectedOrder.borrowingInformation?.previousReturnDate ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-              <div className="mt-4 flex gap-5">
+            <div className="md:w-2/4 p-4">
+              <h2 className="text-2xl font-bold mb-4">Order Details</h2>
+        <strong><span className="font-semibold">Item Name:</span> {selectedItem.name}</strong>
+        <p><span className="font-semibold">Order ID:</span> {selectedOrder._id}</p>
+        <p><span className="font-semibold">User Name:</span> {selectedOrder.user?.name}</p>
+        <p><span className="font-semibold">Borrow Date:</span> {selectedItem.borrowingDate ? new Date(selectedItem.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+        <p><span className="font-semibold">Return Date:</span> {selectedItem.returnDate ? new Date(selectedItem.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+        <p><span className="font-semibold">Reason:</span> {selectedItem.reason || 'N/A'}</p>
+              <div className="mt-2 flex gap-2">
                 <button
                   onClick={handleUpdateStatus}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 mt-2 rounded"
+                   className="bg-blue-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded  whitespace-nowrap"
                 >
                   Already taken it
+                </button>
+                <button
+                  onClick={handleUpdateStatusNotable}
+                   className="bg-green-500 hover:bg-gray-600 text-white font-bold py-1 px-2 rounded  whitespace-nowrap"
+                >
+                  Non-returnable
                 </button>
                 {selectedItem.status !== 'Cancel' && selectedItem.status !== 'Return' && selectedItem.status !== 'Borrowing' && selectedItem.status !== 'Non-returnable' ? (
                   <button
                     onClick={handleUpdateStatusCancel}
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 mt-2 rounded"
+                     className="bg-red-500 hover:bg-gray-600 text-white font-bold py-1 px-2 rounded  whitespace-nowrap"
                   >
                     Cancel Request
                   </button>
                 ) : null}
               </div>
             </div>
-            <div className="md:w-2/3 bg-gray-100 p-5 mt-5 rounded-md" style={{ maxHeight: '450px', overflowY: 'auto' }}>
+            <div className="md:w-2/4 bg-gray-100 p-5 mt-5 rounded-md" style={{ maxHeight: '450px', overflowY: 'auto' }}>
               <h3 className="text-xl font-semibold mb-4">Summary</h3>
               <table className="w-full border-collapse ">
                 <thead>

@@ -132,15 +132,19 @@ export default function OrderListScreen() {
               <tr key={`${item.order._id}-${item._id}`} className='text-center'>
                 <td className='px-7 py-3 whitespace-nowrap border'>{item.name}</td>
                 <td className='px-7 py-3 whitespace-nowrap border'>{item.order.user?.name}</td>
-                <td className='px-7 py-3 whitespace-nowrap'>
-                  {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className='px-7 py-3 whitespace-nowrap'>
-                  {new Date(item.order.borrowingInformation?.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className='px-7 py-3 whitespace-nowrap'>
-                  {new Date(item.order.borrowingInformation?.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
+                <td className='px-7 py-3 whitespace-nowrap border'>
+        {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
+      </td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {item.borrowingDate
+          ? new Date(item.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : 'N/A'}
+      </td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {item.returnDate
+          ? new Date(item.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : 'N/A'}
+      </td>
                 <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Borrowing' ? 'text-blue-500' : ''}`}>{item.status}</td>
                 <td className='text-back-500'>
                       <button className='py-2 px-10 whitespace-nowrap' onClick={() => openModal(item.order, item)}>
@@ -195,7 +199,8 @@ export default function OrderListScreen() {
       <p><span className="font-semibold">Order ID:</span> {selectedOrder._id}</p>
       <p><span className="font-semibold">User Name:</span> {selectedOrder.user?.name}</p>
       <p><span className="font-semibold">Status:</span> {selectedItem.status}</p>
-      <p><span className="font-semibold">Return Date:</span> {selectedOrder.borrowingInformation?.returnDate ? new Date(selectedOrder.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+      <p><span className="font-semibold">Borrow Date:</span> {selectedItem.borrowingDate ? new Date(selectedItem.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+      <p><span className="font-semibold">Return Date:</span> {selectedItem.returnDate ? new Date(selectedItem.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
       <div className="mt-4">
               <div className="mb-4">
               <button

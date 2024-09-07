@@ -209,15 +209,16 @@ export default function ProfileScreen() {
                                 <td className='px-7 py-3 text-center border'>{item.name}</td>
                                 <td className='px-7 py-3 whitespace-nowrap text-center border '>{item.qty}</td>
                                 <td className='px-7 py-3 whitespace-nowrap text-center border'>
-                                    {item.order.borrowingInformation?.borrowingDate
-                                    ? new Date(item.order.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                    : '-'}
+                                    {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
                                 </td>
                                 <td className='px-7 py-3 whitespace-nowrap text-center border'>
-                                {item.order.borrowingInformation?.previousReturnDate
-                                    ? new Date(item.order.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                                    : 'Not returned'}
-                                </td>
+                {item.returnDate
+                    ? new Date(item.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                    : item.returnedDate 
+                    ? new Date(item.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                    : "Not returned This items."}
+                    
+                </td>
                                 <td className={`text-center px-7 py-3  text-center whitespace-nowrap  ${getStatusClass(item.status)}`}>{item.status}</td>
                                 <td className='text-back-500 text-center '>
                                     <button className='py-2 px-10 whitespace-nowrap' onClick={() => openModal(item.order, item)}>
@@ -277,15 +278,9 @@ export default function ProfileScreen() {
                             <strong className="block mb-2"><span className="font-semibold">Item Name:</span> {selectedItem.name}</strong>
                             <p className="mb-2"><span className="font-semibold">User:</span> {selectedOrder.user?.name}</p>
                             <p className="mb-2"><span className="font-semibold">Status:</span> {selectedItem.status}</p>
-                            <p className="mb-2"><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
-                            <p className="mb-2"><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-                            <p className="mb-4">
-                                <span className="font-semibold">Return Date: </span>
-                                {selectedOrder.borrowingInformation?.previousReturnDate 
-                                    ? (selectedItem.status === 'Non-returnable' ? 'No return necessary' : new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }))
-                                    : (selectedItem.status === 'Non-returnable' ? 'No return necessary' : "You have not returned items.")
-                                }
-                            </p>
+                            <p><span className="font-semibold">Borrow Date:</span> {selectedItem.borrowingDate ? new Date(selectedItem.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+                            <p><span className="font-semibold">Returned Date:</span> {selectedItem.returnedDate ? new Date(selectedItem.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'You not returned this Item'}</p>
+                            <p><span className="font-semibold">Reason:</span> {selectedItem.reason || 'N/A'}</p>
                             <div className="mt-4">
                                 {selectedItem.status !== 'Cancel' && selectedItem.status !== 'Confirm' && selectedItem.status !== 'Return' && selectedItem.status !== 'Borrowing' && selectedItem.status !== 'Non-returnable' ? (
                                     <button

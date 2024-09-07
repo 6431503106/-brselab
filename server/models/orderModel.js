@@ -11,6 +11,7 @@ const OrderSchema = mongoose.Schema(
     orderItems: [
       {
         itemId: { type: String, required: true, default: uuidv4 },
+        category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category',required: true},
         name: { type: String, required: true },
         qty: { type: Number, required: true },
         image: { type: String, required: true },
@@ -20,20 +21,13 @@ const OrderSchema = mongoose.Schema(
           required: true,
           ref: "Product",
         },
-        category: { type: mongoose.Schema.Types.ObjectId, 
-          ref: 'Category', 
-          required: true 
-        },
-      },
-    ],
-    borrowingInformation: {
       borrowingDate: { type: Date, required: true },
       returnedDate: { type: Date },
       returnDate: { type: Date },
-      previousReturnDate: { type: Date },
       canceledDate: { type: Date },
       reason: { type: String, required: true },
-    },
+      },
+    ],
     notificationSent: { type: Boolean, default: false },
   },
   {

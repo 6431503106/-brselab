@@ -193,13 +193,13 @@ export default function OrderListScreen() {
                   {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
                 </td>
                 <td className='text-center px-7 py-3 whitespace-nowrap border'>
-                  {item.order.borrowingInformation?.borrowingDate
-                    ? new Date(item.order.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                  {item.borrowingDate
+                    ? new Date(item.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
                     : '-'}
                 </td>
                 <td className='text-center px-7 py-3 whitespace-nowrap border'>
-                  {item.order.borrowingInformation?.canceledDate
-                    ? new Date(item.order.borrowingInformation.canceledDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                  {item.canceledDate
+                    ? new Date(item.canceledDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
                     : 'Not canceled'}
                 </td>
                 <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Cancel' ? 'text-red-500' : ''}`}>{item.status}</td>
@@ -262,9 +262,8 @@ export default function OrderListScreen() {
               <p><span className="font-semibold">Order ID:</span> {selectedOrder._id}</p>
               <p><span className="font-semibold">User Name:</span> {selectedOrder.user?.name}</p>
               <p><span className="font-semibold">Status:</span> {selectedItem.status}</p>
-              <p><span className="font-semibold">Request Date:</span> {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-              <p><span className="font-semibold">Borrow Date:</span> {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-              <p><span className="font-semibold">Return Date:</span> {selectedOrder.borrowingInformation?.returnDate ? new Date(selectedOrder.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'Not returned'}</p>
+              <p><span className="font-semibold">Borrow Date:</span> {selectedItem.borrowingDate ? new Date(selectedItem.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+              <p><span className="font-semibold">Canceled Date:</span> {selectedItem.canceledDate ? new Date(selectedItem.canceledDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
               <div className="mt-4">
                 <div className="mb-4">
                   <h3><span className="font-semibold">Status: </span>

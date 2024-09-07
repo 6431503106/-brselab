@@ -6,20 +6,11 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import cron from "node-cron";
 import User from '../models/userModel.js';
-//import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config(); 
 
-
-
 const addOrderItems = asyncHandler(async (req, res) => {
-  const {
-    orderItems,
-    borrowingInformation,
-    borrowingDate,
-    reason,
-    returnDate,
-  } = req.body;
+  const { orderItems } = req.body;
 
   if (orderItems?.length === 0) {
     res.status(400);
@@ -29,19 +20,22 @@ const addOrderItems = asyncHandler(async (req, res) => {
       orderItems: orderItems.map((item) => ({
         ...item,
         product: item._id,
+        borrowingDate: item.borrowingDate || new Date(),
+        returnDate: item.returnDate || null,
+        reason: item.reason || "No reason provided",
       })),
       user: req.user._id,
-      borrowingInformation,
-      borrowingDate,
-      reason,
-      returnDate,
     });
-    const createdOrder = await order.save();
 
+    const createdOrder = await order.save();
     res.status(201).json(createdOrder);
   }
 });
 
+
+// @desc    Fetch an order with user details
+// @route   GET /api/orders/:id
+// @access  Private
 const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id).populate("user", "name email");
 
@@ -124,29 +118,15 @@ const borrowProduct = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (order) {
     const currentDate = new Date();
-    currentDate.setHours(currentDate.getHours() + 0); // Adjust to UTC+7
 
-    // Set the borrowing date to the current date
-    order.borrowingDate = currentDate;
-
-    // Calculate previousReturnDate by adding 6 days to the borrowing date
-    const previousReturnDate = new Date(currentDate);
-    previousReturnDate.setDate(previousReturnDate.getDate() + 6); // 7 days in total
-    order.previousReturnDate = previousReturnDate;
-
-    // Calculate returnDate by adding 7 days to the borrowing date
-    const returnDate = new Date(currentDate);
-    returnDate.setDate(returnDate.getDate() + 6);
-    order.returnDate = returnDate;
+    // Loop through each order item, only update the borrowing date, return date will be selected by the user
+    order.orderItems.forEach(item => {
+      item.borrowingDate = currentDate;  // Set borrowingDate to current date
+      // Do not auto-calculate returnDate anymore, it will be provided by the user
+    });
 
     const updatedOrder = await order.save();
-
-    // Respond with the updated order, including both return dates
-    res.json({
-      ...updatedOrder._doc,
-      previousReturnDate: order.previousReturnDate,
-      returnDate: order.returnDate,
-    });
+    res.json(updatedOrder);
   } else {
     res.status(404);
     throw new Error("Order Not Found");
@@ -255,7 +235,7 @@ const updateReturnDate = async (orderId, newReturnDate) => {
 
 const updateOrderItemStatus = asyncHandler(async (req, res) => {
   const { orderId, itemId } = req.params;
-  const { status } = req.body;
+  const { status, returnDate } = req.body;  // Assume returnDate is provided by the user
 
   try {
     const order = await Order.findOne({
@@ -267,72 +247,38 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Order or item not found" });
     }
 
-    const item = order.orderItems.find((item) => item._id.toString() === itemId);
-
+    const item = order.orderItems.find(item => item._id.toString() === itemId);
     if (!item) {
       return res.status(404).json({ message: "Item not found in the order" });
     }
 
     const product = await Product.findById(item.product);
-
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Adjust stock based on status changes
-    if (status === "Confirm" && item.status !== "Confirm") {
+    if (status === "Borrowing" && item.status === "Confirm") {
       if (product.countInStock <= 0) {
         return res.status(400).json({ message: "Not enough stock to confirm the order" });
       }
-      order.notificationSent = false;
-
-    } else if (status === "Borrowing" && item.status === "Confirm") {
-      if (product.countInStock <= 0) {
-          return res.status(400).json({ message: "Not enough stock to confirm the order" });
-      }
       product.countInStock -= item.qty;
-  
-      // Adjust dates
-      const now = new Date();
-      now.setHours(now.getHours() + 0); // Adjust to UTC+7
-      order.borrowingInformation.borrowingDate = now;
-      const returnDate = new Date(now);
-      returnDate.setDate(returnDate.getDate() + 6);  // Create return date 7 days after borrowing
-      order.borrowingInformation.returnDate = returnDate;
-
+      item.borrowingDate = new Date();  // Set the current date as the borrowing date
+      item.returnDate = returnDate || item.returnDate;  // Use the provided returnDate if available
       order.notificationSent = false;
 
+    } else if (status === "Non-returnable" && item.status === "Confirm") {
+      product.countInStock -= item.qty;
+      order.notificationSent = true;
+      item.returnDate = null;
     } else if (status === "Return" && item.status === "Borrowing") {
       product.countInStock += item.qty;
-
-      // Adjust return dates
-      const returnedDate = new Date();
-      returnedDate.setHours(returnedDate.getHours() + 0);
-      order.borrowingInformation.returnedDate = returnedDate;
-      order.borrowingInformation.returnDate = null; //คืนมาแล้ววันคืนให้เป็น Null
+      item.returnedDate = new Date();
+      item.returnDate = null;
 
     } else if (status === "Cancel" && item.status !== "Cancel") {
-      const canceledDate = new Date();
-      canceledDate.setHours(canceledDate.getHours() + 0);
-      order.borrowingInformation.canceledDate = canceledDate;
-      order.borrowingInformation.returnDate = null;
-    } else if (status === "Pending" && item.status !== "Pending") {
-        // ตรวจสอบว่ามีวันที่ยืมอยู่แล้วหรือไม่
-        if (order.borrowingInformation.borrowingDate) {
-          const borrowingDate = new Date(order.borrowingInformation.borrowingDate);
-          const returnDate = new Date(borrowingDate);
-          returnDate.setDate(borrowingDate.getDate() + 6);  // เพิ่ม 7 วันจาก borrowingDate
-        } else {
-          // กรณีไม่มีวันที่ยืม ให้ทำการจัดการตามที่จำเป็น (อาจจะกำหนด borrowingDate ใหม่หรือแจ้งเตือน)
-          console.error("Borrowing date is not set.");
-        }
-      } else if (status === "Non-returnable" && item.status !== "Non-returnable") {
-        // Adjust stock and remove return date for "Non-returnable" status
-        product.countInStock -= item.qty;
-      
-        // Set returnDate to null when status is "Non-returnable"
-        order.borrowingInformation.returnDate = null;
-      }      
+      item.canceledDate = new Date();
+      item.returnDate = null;
+    }
 
     item.status = status;
 
@@ -378,6 +324,8 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
+
+
 
 
 

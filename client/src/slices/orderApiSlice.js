@@ -5,31 +5,15 @@ export const orderApiSlice = apiSlice.injectEndpoints({
   endpoints: builder => ({
     createOrder: builder.mutation({
       query: order => {
-        // Extract borrowingDate from the order object
-        const { borrowingDate, ...rest } = order;
-    
-        // Parse borrowingDate as a Date object in local time
-        const borrowingDateObject = new Date(borrowingDate);
-        
-        // Adjust to UTC+7 (if needed, but adding 0 doesn't change the time)
-        const borrowingDateInUTCPlus7 = new Date(borrowingDateObject.getTime() + 0);
-    
-        // Calculate previousReturnDate by adding 6 days to the adjusted borrowingDate
-        const previousReturnDate = new Date(borrowingDateInUTCPlus7);
-        previousReturnDate.setDate(previousReturnDate.getDate() + 6);
-    
-        // Calculate returnDate by adding 7 days to the adjusted borrowingDate
-        const returnDate = new Date(borrowingDateInUTCPlus7);
-        returnDate.setDate(returnDate.getDate() + 6);
+        const { borrowingDate, returnDate, ...rest } = order;
     
         return {
           url: ORDERS_URL,
           method: "POST",
           body: {
             ...rest,
-            borrowingDate: borrowingDateInUTCPlus7,
-            previousReturnDate,  // previousReturnDate ที่คำนวณแล้ว
-            returnDate,                        // previousReturnDate ที่คำนวณแล้ว
+            borrowingDate, 
+            returnDate,   
           },
         };
       },

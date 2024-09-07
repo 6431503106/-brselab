@@ -137,12 +137,6 @@ const ManageMessages = () => {
 
         <div className="flex space-x-2">
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded-md"
-            onClick={() => setShowReadModal(false)}
-          >
-            Cancel
-          </button>
-          <button
             className="bg-yellow-500 text-white px-4 py-2 rounded-md"
             onClick={() => handleSubmit("read")}
           >
@@ -156,6 +150,12 @@ const ManageMessages = () => {
             }}
           >
             Reply
+          </button>
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded-md"
+            onClick={() => setShowReadModal(false)}
+          >
+            Cancel
           </button>
         </div>
       </Modal>
@@ -181,17 +181,18 @@ const ManageMessages = () => {
 
         <div className="flex space-x-2 mt-4">
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded-md"
-            onClick={() => setShowReplyModal(false)}
-          >
-            Cancel
-          </button>
-          <button
             className="bg-green-500 text-white px-4 py-2 rounded-md"
             type="button"
             onClick={() => handleSubmit("reply")}
           >
             SEND
+          </button>
+
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded-md"
+            onClick={() => setShowReplyModal(false)}
+          >
+            Cancel
           </button>
         </div>
       </Modal>

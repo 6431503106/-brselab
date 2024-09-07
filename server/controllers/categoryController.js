@@ -5,8 +5,12 @@ import Category from '../models/categoryModel.js';
 // @route   GET /api/categories
 // @access  Public
 const getCategories = asyncHandler(async (req, res) => {
-    const categories = await Category.find({});
-    res.json(categories);
+    try {
+        const categories = await Category.find({});
+        res.json(categories);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching categories" });
+    }
 });
 
 // @desc    Create a new category
@@ -14,6 +18,11 @@ const getCategories = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const createCategory = asyncHandler(async (req, res) => {
     const { name } = req.body;
+    
+    if (!name || name.trim().length === 0) {
+        res.status(400);
+        throw new Error('Category name is required');
+    }
     
     const categoryExists = await Category.findOne({ name });
     if (categoryExists) {

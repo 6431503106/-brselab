@@ -5,26 +5,30 @@ import { removeFromCart, clearCartItems } from '../slices/cartSlice';
 import { toast } from 'react-toastify';
 import { useCreateOrderMutation } from '../slices/orderApiSlice';
 import { v4 as uuidv4 } from 'uuid';
-import { useGetProductsQuery } from '../slices/productsApiSlice';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 
 export default function CartScreen() {
   const cart = useSelector(state => state.cart);
   const { cartItems } = cart;
-  const { borrowingInformation } = cart;
-  const [reason, setReason] = useState(borrowingInformation?.address || "");
+  const [reason, setReason] = useState("");
   const [borrowingDate, setBorrowingDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [createOrder, { isLoading }] = useCreateOrderMutation();
 
   const totalItems = cartItems.reduce((acc, item) => acc + +item.qty, 0);
-  const { data: products } = useGetProductsQuery(); // Fetch products
 
   const handleDeleteItem = id => {
     dispatch(removeFromCart(id));
+  };
+
+  const convertToUTCPlus7 = (dateString) => {
+    const date = new Date(dateString);
+    const utcPlus7Date = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours
+    return utcPlus7Date.toISOString();  // Convert to ISO string for consistent backend processing
   };
 
   const handleSubmit = async (e) => {
@@ -35,47 +39,43 @@ export default function CartScreen() {
       return;
     }
     if (!reason) {
-      toast.error("Please provide your reason.");
+      toast.error("Please provide a reason.");
       return;
     }
     if (!borrowingDate) {
-      toast.error("Please provide borrowing date.");
+      toast.error("Please select a borrowing date.");
+      return;
+    }
+    if (!returnDate) {
+      toast.error("Please select a return date.");
       return;
     }
   
     try {
-      // Convert borrowingDate to UTC+7
-      const borrowingDateObject = new Date(borrowingDate);
-      const borrowingDateInUTCPlus7 = new Date(borrowingDateObject.getTime() + 0);
-  
-      // Calculate previousReturnDate by adding 7 days to adjusted borrowingDate
-      const previousReturnDate = new Date(borrowingDateInUTCPlus7);
-      previousReturnDate.setDate(previousReturnDate.getDate() + 6);
+      // Convert dates to UTC+7
+      const borrowingDateInUTCPlus7 = convertToUTCPlus7(borrowingDate);
+      const returnDateInUTCPlus7 = convertToUTCPlus7(returnDate);
 
-      const returnDate = new Date(borrowingDateInUTCPlus7);
-      returnDate.setDate(returnDate.getDate() + 6);
-  
-      const borrowingInformationData = {
-        reason,
-        borrowingDate: borrowingDateInUTCPlus7.toISOString(),
-        previousReturnDate: previousReturnDate.toISOString(),
-        returnDate: returnDate.toISOString(), 
+      // Construct borrowing and return information per item
+      const orderItems = cartItems.map(item => ({
+        ...item,
+        itemId: uuidv4(),  // Create unique item IDs
+        borrowingDate: borrowingDateInUTCPlus7,  // Convert to UTC+7
+        returnDate: returnDateInUTCPlus7,        // Convert to UTC+7
+        reason,                                  // Use the entered reason
+      }));
+
+      const orderData = {
+        orderItems,        // Pass the constructed order items with borrowing/return info
       };
   
-      const res = await createOrder({
-        orderItems: cartItems.map(item => ({
-          ...item,
-          // Keep the existing itemId rather than creating a new one
-          itemId: uuidv4, // Assuming _id is used as itemId
-        })),
-        borrowingInformation: borrowingInformationData,
-      }).unwrap();
+      await createOrder(orderData).unwrap();
   
       dispatch(clearCartItems());
   
       Swal.fire({
-        title: "In Progress",
-        html: "Please wait...",
+        title: "Request Submitted",
+        html: "Your request is being processed...",
         timer: 2000,
         timerProgressBar: true,
         didOpen: () => {
@@ -83,14 +83,14 @@ export default function CartScreen() {
         },
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.timer) {
-          console.log("I was closed by the timer");
+          navigate("/profile2"); // Redirect to profile
         }
       });
   
-      // Clear the input fields
+      // Clear the form fields after submission
       setReason("");
       setBorrowingDate("");
-      navigate("/profile2");
+      setReturnDate("");
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
@@ -103,7 +103,7 @@ export default function CartScreen() {
   const today = format(new Date(), 'yyyy-MM-dd');
 
   return (
-    <div className="flex flex-col md:flex-row  items-start mx-auto">
+    <div className="flex flex-col md:flex-row items-start mx-auto">
       <div className="md:w-2/4 p-4">
         <div className='content-menu justify-start '>
           <Link to={'/'}>
@@ -123,16 +123,16 @@ export default function CartScreen() {
               </div>
             ))}
           </div> : (
-            <p className='content-wrapper text-gray-400 text-xl justify-start'>Your Cart is empty.</p>
+            <p className='content-wrapper text-gray-400 text-xl justify-start'>Your cart is empty.</p>
           )}
       </div>
 
       <div className='content-table'>
         <div className="container mx-auto mt-8 mb-28 p-4 max-w-md">
-        <div>
-          <h2 className="text-xl font-semibold">Total: {totalItems}</h2>
-        </div>
-          <h3 className="text-xl font-semibold">Information</h3>
+          <div>
+            <h2 className="text-xl font-semibold">Total Items: {totalItems}</h2>
+          </div>
+          <h3 className="text-xl font-semibold">Borrowing Information</h3>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="reason" className="text-gray-700">
@@ -150,7 +150,7 @@ export default function CartScreen() {
 
             <div className="mb-4">
               <label htmlFor="borrowingDate" className="text-gray-700">
-                Month/Day/Year. Borrowing Date:
+                Borrowing Date: MM/DD/YY
               </label>
               <input
                 type="date"
@@ -158,27 +158,31 @@ export default function CartScreen() {
                 className="bg-white border border-gray-300 p-2 rounded-md mt-2 w-full uppercase"
                 value={borrowingDate}
                 onChange={e => setBorrowingDate(e.target.value)}
-                min={today} // Restrict selection to today or future dates
+                min={today}
               />
             </div>
 
             <div className="mb-4">
-              <label htmlFor="previousReturnDate" className="text-gray-700">
-                Month/Day/Year. Previous Return Date:
+              <label htmlFor="returnDate" className="text-gray-700">
+                Return Date: MM/DD/YY
               </label>
-              <p>
-                {borrowingDate
-                  ? new Date(new Date(borrowingDate).getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('us', { month: '2-digit', day: '2-digit', year: 'numeric' })
-                  : ''}
-              </p>
+              <input
+                type="date"
+                id="returnDate"
+                className="bg-white border border-gray-300 p-2 rounded-md mt-2 w-full uppercase"
+                value={returnDate}
+                onChange={e => setReturnDate(e.target.value)}
+                min={borrowingDate || today}
+              />
             </div>
 
             <div className="flex justify-between">
               <button
                 type="submit"
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                disabled={isLoading}  // Disable the button while loading
               >
-                Continue
+                {isLoading ? "Processing..." : "Submit Request"}
               </button>
               <button
                 type="button"
@@ -192,5 +196,5 @@ export default function CartScreen() {
         </div>
       </div>
     </div>
-  )
+  );
 }

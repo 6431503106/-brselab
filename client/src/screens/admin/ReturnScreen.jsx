@@ -166,24 +166,25 @@ const handleDeleteOrderItem = async (orderId, itemId) => {
             </tr>
           </thead>
           <tbody>
-            {paginatedOrders.map(item => (
-              <tr key={`${item.order._id}-${item._id}`} className='text-center'>
-                <td className='px-7 py-3 whitespace-nowrap border'>{item.name}</td>
-                <td className='px-7 py-3 whitespace-nowrap border'>{item.order.user?.name}</td>
-                <td className='px-7 py-3 whitespace-nowrap border '>
-                  {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className='px-7 py-3 whitespace-nowrap border '>
-                  {new Date(item.order.borrowingInformation?.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
-                </td>
-                <td className='px-7 py-3 whitespace-nowrap border'>
-                  {item.order.borrowingInformation?.returnedDate
-                    ? new Date(item.order.borrowingInformation.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                    : item.order.borrowingInformation?.returnDate
-                    ? new Date(item.order.borrowingInformation.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                    : item.order.borrowingInformation?.previousReturnDate
-                    ? new Date(item.order.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                    : 'Not returned'}
+  {paginatedOrders.map(item => (
+    <tr key={`${item.order._id}-${item._id}`} className='text-center'>
+      <td className='px-7 py-3 whitespace-nowrap border'>{item.name}</td>
+      <td className='px-7 py-3 whitespace-nowrap border'>{item.order.user?.name}</td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {new Date(item.order.createdAt).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })}
+      </td>
+      <td className='px-7 py-3 whitespace-nowrap border'>
+        {item.borrowingDate
+          ? new Date(item.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+          : 'N/A'}
+      </td>
+      <td className='px-7 py-3 whitespace-nowrap text-center border'>
+                {item.returnDate
+                    ? new Date(item.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                    : item.returnedDate 
+                    ? new Date(item.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
+                    : "Not returned items."}
+                    
                 </td>
                 <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Return' ? 'text-neutral-500' : ''}`}>{item.status}</td>
                 <td className='px-7 py-3 whitespace-nowrap border'>
@@ -244,19 +245,9 @@ const handleDeleteOrderItem = async (orderId, itemId) => {
       <strong><span className="font-semibold">Item Name:</span> {selectedItem.name}</strong>
       <p><span className="font-semibold">Order ID:</span> {selectedOrder._id}</p>
       <p><span className="font-semibold">User Name:</span> {selectedOrder.user?.name}</p>
-      <p><span className="font-semibold">Reason:</span> {selectedOrder.borrowingInformation?.reason}</p>
-      <p className="font-semibold"><span className="font-semibold">Borrow Date: </span> 
-      {selectedOrder.borrowingInformation?.borrowingDate ? new Date(selectedOrder.borrowingInformation.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
-      <p className="font-semibold"><span className="font-semibold">Return Date: </span>
-      {selectedOrder.status === "Cancel"
-          ? "You have not returned items."
-          :selectedOrder.borrowingInformation?.returnedDate 
-          ? new Date(selectedOrder.borrowingInformation.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-          : selectedOrder.borrowingInformation?.previousReturnDate 
-          ? new Date(selectedOrder.borrowingInformation.previousReturnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-          : "You have not returned items."
-      }
-      </p>
+      <p><span className="font-semibold">Borrow Date:</span> {selectedItem.borrowingDate ? new Date(selectedItem.borrowingDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+      <p><span className="font-semibold">Returned Date:</span> {selectedItem.returnedDate ? new Date(selectedItem.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
+      <p><span className="font-semibold">Reason:</span> {selectedItem.reason || 'N/A'}</p>
       <div className="mt-4">
       <button
                   onClick={handleUpdateStatus}
