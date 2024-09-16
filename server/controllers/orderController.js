@@ -166,7 +166,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // 0 8 * * * Schedule the cron job to run daily at 8:00 AM,* * * * * every 1 min
-cron.schedule('0 8 * * *', () => {
+cron.schedule('* * * * *', () => {
   checkUpcomingReturnDates();
 });
 
@@ -175,38 +175,43 @@ export const checkUpcomingReturnDates = async () => {
 
   const now = new Date();
   const upcomingDate = new Date(now);
-  upcomingDate.setDate(upcomingDate.getDate() + 3); // เพิ่ม n วันสำหรับการตรวจสอบวันคืน
+  upcomingDate.setDate(upcomingDate.getDate() + 3); // Add n days for return date check
 
   try {
     const orders = await Order.find({
-      'borrowingInformation.returnDate': { $lte: upcomingDate },
-      notificationSent: { $ne: true } // ตรวจสอบว่ายังไม่ได้ส่งการแจ้งเตือน
+      'orderItems.returnDate': { $lte: upcomingDate },  // Find items with return dates approaching
+      'orderItems.notificationSent': { $ne: true },     // Only get items that haven't been notified
+      'orderItems.status': 'Borrowing'                  // Check that the item is in Borrowing status
     }).populate("user", "email name");
 
     console.log(`Found ${orders.length} orders with return dates`);
 
-    const notifiedUsers = new Set(); // ใช้ Set เพื่อเก็บข้อมูลของผู้ใช้ที่ได้รับการแจ้งเตือนแล้ว
-
     for (const order of orders) {
-      if (!notifiedUsers.has(order.user._id.toString())) {
-        const returnDate = new Date(order.borrowingInformation.returnDate).toLocaleDateString();
-        const emailOptions = {
-          from: `${process.env.MAIL_FROM_NAME} <${process.env.MAIL_FROM_EMAIL}>`,
-          to: order.user.email,
-          subject: 'Return Date Reminder',
-          text: `Dear ${order.user.name},\n\nThis is a reminder that the return date for your borrowed item(s) is approaching on DD/MM/YYYY: ${returnDate}.\n\nPlease ensure that you return the items on time.\n\nThank you!`,
-        };
+      let notificationSent = false;
 
-        await transporter.sendMail(emailOptions);
-        console.log(`Reminder sent to ${order.user.email} for return date: ${returnDate}`);
+      for (const item of order.orderItems) {
+        // Check if the returnDate is defined, notification has not been sent yet, and status is "Borrowing"
+        if (item.returnDate && !item.notificationSent && item.status === "Borrowing") {
+          const returnDate = new Date(item.returnDate).toLocaleDateString();
+          const emailOptions = {
+            from: `${process.env.MAIL_FROM_NAME} <${process.env.MAIL_FROM_EMAIL}>`,
+            to: order.user.email,
+            subject: 'Return Date Reminder',
+            text: `Dear ${order.user.name},\n\nThis is a reminder that the return date for your borrowed item '${item.name}' is approaching on: ${returnDate}.\n\nPlease ensure that you return the items on time.\n\nThank you!`,
+          };
 
-        // อัปเดตสถานะการแจ้งเตือนหลังจากส่งอีเมล
-        await Order.updateMany(
-          { 'borrowingInformation.returnDate': order.borrowingInformation.returnDate },
-          { $set: { notificationSent: true } }
-        );
+          await transporter.sendMail(emailOptions); // Send the email
+          console.log(`Reminder sent to ${order.user.email} for item: ${item.name} with return date: ${returnDate}`);
 
-        notifiedUsers.add(order.user._id.toString()); 
+          // Mark the item as notified
+          item.notificationSent = true;
+          notificationSent = true;  // At least one notification has been sent for this order
+        }
+      }
+
+      // Save the order only if a notification was sent for any of its items
+      if (notificationSent) {
+        await order.save();
       }
     }
 
@@ -218,30 +223,28 @@ export const checkUpcomingReturnDates = async () => {
   }
 };
 
-const updateReturnDate = async (orderId, newReturnDate) => {
+const updateReturnDate = async (orderId, itemId, newReturnDate) => {
   try {
-    // อัปเดตวันที่คืนและรีเซ็ตสถานะการแจ้งเตือน
     await Order.updateOne(
-      { _id: orderId },
-      { $set: { 'borrowingInformation.returnDate': newReturnDate, notificationSent: false } }
+      { _id: orderId, "orderItems._id": itemId }, // Find the specific order and item
+      {
+        $set: { "orderItems.$.returnDate": newReturnDate, "orderItems.$.notificationSent": false }, // Update returnDate and reset notificationSent
+      }
     );
     console.log("Return date updated and notification status reset.");
   } catch (error) {
     console.error("Error updating return date:", error.message);
   }
 };
-
-
+////sssss
 
 const updateOrderItemStatus = asyncHandler(async (req, res) => {
   const { orderId, itemId } = req.params;
-  const { status, returnDate } = req.body;  // Assume returnDate is provided by the user
+  const { status, returnDate } = req.body; // Assume returnDate is provided by the user
 
   try {
-    const order = await Order.findOne({
-      _id: orderId,
-      "orderItems._id": itemId,
-    }).populate("user", "email name");
+    // Find the order and the specific item by itemId
+    const order = await Order.findOne({ _id: orderId, "orderItems._id": itemId }).populate("user", "email name");
 
     if (!order) {
       return res.status(404).json({ message: "Order or item not found" });
@@ -257,49 +260,45 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Status-specific logic
     if (status === "Borrowing" && item.status === "Confirm") {
       if (product.countInStock <= 0) {
         return res.status(400).json({ message: "Not enough stock to confirm the order" });
       }
       product.countInStock -= item.qty;
-      item.borrowingDate = new Date();  // Set the current date as the borrowing date
-      item.returnDate = returnDate || item.returnDate;  // Use the provided returnDate if available
-      order.notificationSent = false;
+      item.borrowingDate = new Date(); // Set current date as borrowing date
+      item.returnDate = returnDate || item.returnDate; // Update returnDate if provided
+      item.notificationSent = false; // Reset notification flag
 
     } else if (status === "Non-returnable" && item.status === "Confirm") {
       product.countInStock -= item.qty;
-      order.notificationSent = true;
-      item.returnDate = null;
+      item.notificationSent = true; // No need for notifications
+      item.returnDate = null; // No return date for non-returnable items
+
     } else if (status === "Return" && item.status === "Borrowing") {
       product.countInStock += item.qty;
       item.returnedDate = new Date();
-      item.returnDate = null;
+      item.returnDate = null; // Clear the return date once returned
 
     } else if (status === "Cancel" && item.status !== "Cancel") {
       item.canceledDate = new Date();
-      item.returnDate = null;
+      item.returnDate = null; // Clear return date on cancellation
     }
 
-    item.status = status;
+    item.status = status; // Update the item's status
 
+    // Save the updated product and order
     await product.save();
     await order.save();
 
-    // Log the user email before sending
-    console.log("User email:", order.user.email);
+    // Prepare email notifications
+    const borrowingDate = item.borrowingDate ? new Date(item.borrowingDate).toLocaleDateString() : 'N/A'; // Format the borrowing date
 
-    // Retrieve borrowing date
-    const borrowingDate = order.borrowingInformation.borrowingDate;
-    // Format the borrowing date (optional)
-    const formattedBorrowingDate = borrowingDate ? new Date(borrowingDate).toLocaleDateString() : 'N/A';
-
-    // Send an email notification based on the status
-    let message;
-    let subject;
-
+    // Prepare the email content based on the status
+    let subject, message;
     if (status === "Confirm") {
       subject = 'Status notification from SE LAB';
-      message = `Dear ${order.user.name},\n\nYour request for the ${item.name} has been confirmed!\n\nBorrowing Date: ${formattedBorrowingDate}\n\nThank you.`;
+      message = `Dear ${order.user.name},\n\nYour request for the ${item.name} has been confirmed!\n\nBorrowing Date: ${borrowingDate}\n\nThank you.`;
     } else if (status === "Cancel") {
       subject = 'Status notification from SE LAB';
       message = `Dear ${order.user.name},\n\nYour request has been canceled.\n\nProduct name: ${item.name}\n\nIf you have any questions, please contact us.`;
@@ -308,6 +307,7 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
       message = `Dear ${order.user.name},\n\nThe item ${item.name} is now marked as non-returnable.\n\nNo return date is applicable.\n\nThank you.`;
     }
 
+    // Send the email if necessary
     if (message && order.user && order.user.email) {
       await sendEmail({
         email: order.user.email,
@@ -318,7 +318,9 @@ const updateOrderItemStatus = asyncHandler(async (req, res) => {
       console.error('No recipients defined');
     }
 
+    // Respond with the updated order
     res.json(order);
+
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ message: "Server Error" });
