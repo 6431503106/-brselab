@@ -159,6 +159,7 @@ const Header = () => {
                                 <Menu.Item key="15"><Link to="/admin/borrowing">Borrowing</Link></Menu.Item>
                                 <Menu.Item key="13"><Link to="/admin/return">Return</Link></Menu.Item>
                                 <Menu.Item key="14"><Link to="/admin/cancel">Cancel</Link></Menu.Item>
+                                <Menu.Item key="16"><Link to="/admin/non">Non-returnable</Link></Menu.Item>
                             </Menu.SubMenu>
                             <Menu.Item key="6" icon={<MailOutlined />}>
                                 <Link to="/admin/manageMessages"> Messages </Link>

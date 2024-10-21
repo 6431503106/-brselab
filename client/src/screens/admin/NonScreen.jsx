@@ -52,7 +52,7 @@ export default function OrderListScreen() {
       order.orderItems
         .filter(item =>
           (item.name.toLowerCase().includes(searchValue) || item._id.toLowerCase().includes(searchValue)) &&
-          item.status === 'Confirm'
+          item.status === 'Non-returnable'
         )
         .map(item => ({
           ...item,
@@ -215,7 +215,7 @@ export default function OrderListScreen() {
   return (
     <div>
       <div className="content-wrapper justify-start">
-        <h2 className="text-3xl font-semibold mb-3">Confirmed Lists</h2>
+        <h2 className="text-3xl font-semibold mb-3">Non-returnable Lists</h2>
       </div>
       <div className="content-menu flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
@@ -265,7 +265,7 @@ export default function OrderListScreen() {
           ? new Date(item.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
           : 'N/A'}
       </td>
-      <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Confirm' ? 'text-green-500' : ''}`}>{item.status}</td>
+      <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Non-returnable' ? 'text-orange-300' : ''}`}>{item.status}</td>
       <td className='px-7 py-3 whitespace-nowrap border'>
         <button className='py-2 px-2 whitespace-nowrap' onClick={() => openModal(item.order, item)}>
           <AiOutlineMore />
@@ -328,18 +328,7 @@ export default function OrderListScreen() {
         <p><span className="font-semibold">Return Date:</span> {selectedItem.returnDate ? new Date(selectedItem.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' }) : 'N/A'}</p>
         <p><span className="font-semibold">Reason:</span> {selectedItem.reason || 'N/A'}</p>
               <div className="mt-2 flex gap-2">
-                <button
-                  onClick={handleUpdateStatus}
-                   className="bg-blue-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded  whitespace-nowrap"
-                >
-                  Already taken it
-                </button>
-                <button
-                  onClick={handleUpdateStatusNotable}
-                   className="bg-green-500 hover:bg-gray-600 text-white font-bold py-1 px-2 rounded  whitespace-nowrap"
-                >
-                  Non-returnable
-                </button>
+        
                 {selectedItem.status !== 'Cancel' && selectedItem.status !== 'Return' && selectedItem.status !== 'Borrowing' && selectedItem.status !== 'Non-returnable' ? (
                   <button
                     onClick={handleUpdateStatusCancel}
