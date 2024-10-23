@@ -49,6 +49,7 @@ Before running the project, ensure that the following software tools and depende
 Follow these steps to set up and run the project on your local machine:
 ```
 npm run dev
+npm run build:all
 ```
 concurrently \"cd client && npm run dev\" \"cd server && npm run dev\
 
