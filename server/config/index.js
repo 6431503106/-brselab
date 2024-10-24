@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 /* CONFIGURE ENV VARIABLES */
 
 dotenv.config();
-const APP_PORT = process.env.APP_PORT ;
+const PORT = process.env.PORT ;
 const NODE_ENV = process.env.NODE_ENV ;
 const MONGODB_URI = process.env.MONGODB_URI ;
 const JWT_SECRET = process.env.JWT_SECRET ;
@@ -20,7 +20,7 @@ const MAIL_PASSWORD = process.env.MAIL_PASSWORD ;
 const ADMIN_MAIL = process.env.ADMIN_MAIL ;
 
 export {
-    APP_PORT,
+    PORT,
     NODE_ENV,
     MONGODB_URI,
     JWT_SECRET,
