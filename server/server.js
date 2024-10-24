@@ -7,24 +7,21 @@ import productRoutes from "./routes/productRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js"
 import cookieParser from "cookie-parser"
-/*import passport from "./utils/passport.js"*/
 import orderRoutes from "./routes/orderRoutes.js"
 import uploadRoutes from "./routes/uploadRoutes.js"
 import stripe from "./utils/stripe.js"
 import generalRoutes from "./routes/generalRoutes.js";
 import adminRoutes from './routes/adminRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
+import { fileURLToPath } from 'url';
 
 dotenv.config()
 
 connectDB()
 
-const PORT = process.env.PORT || 5000
-
 const app = express()
 
-//https://stackoverflow.com/questions/57009371/access-to-xmlhttprequest-at-from-origin-localhost3000-has-been-blocked
-
+// Set CORS headers
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000")
   next()
@@ -39,16 +36,13 @@ app.use(
 )
 
 app.use(cookieParser())
-/*passport(app)*/
-
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// Stripe setup
 stripe(app)
 
-app.get("/", (req, res) => {
-  res.send("Api is running...")
-})
+// API Routes
 app.use("/api/products", productRoutes)
 app.use('/api/categories', categoryRoutes)
 app.use("/api/users", userRoutes)
@@ -57,13 +51,34 @@ app.use("/api/upload", uploadRoutes)
 app.use("/api/general", generalRoutes)
 app.use('/api/admin', adminRoutes)
 
+// Resolve __dirname in ES6
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const __dirname = path.resolve()
+// Serve static files from /uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
+// Serve static files in production
+if (process.env.NODE_ENV === "production") {
+  // Serve client static files from /client/dist
+  app.use(express.static(path.join(__dirname, "/client/dist")))
+
+  // Send all requests to index.html for React routing
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"))
+  )
+} else {
+  // Development route for the API
+  app.get("/", (req, res) => {
+    res.send("Api is running...")
+  })
+}
+
+// Error handling middleware
 app.use(notFound)
 app.use(errorHandler)
 
+const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })

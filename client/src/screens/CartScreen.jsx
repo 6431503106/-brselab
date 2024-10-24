@@ -14,6 +14,7 @@ export default function CartScreen() {
   const [reason, setReason] = useState("");
   const [borrowingDate, setBorrowingDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);  // Sidebar state
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -28,12 +29,15 @@ export default function CartScreen() {
   const convertToUTCPlus7 = (dateString) => {
     const date = new Date(dateString);
     const utcPlus7Date = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours
-    return utcPlus7Date.toISOString();  // Convert to ISO string for consistent backend processing
+    return utcPlus7Date.toISOString();
   };
+
+  const hasFreeItems = cartItems.some(item => item.category === "66cca9155fa68b084904d0d1");
+  const hasNonFreeItems = cartItems.some(item => item.category !== "66cca9155fa68b084904d0d1");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (cartItems.length === 0) {
       toast.error("Your cart is empty.");
       return;
@@ -46,33 +50,28 @@ export default function CartScreen() {
       toast.error("Please select a borrowing date.");
       return;
     }
-    if (!returnDate) {
-      toast.error("Please select a return date.");
+    if (hasNonFreeItems && !returnDate) {
+      toast.error("Please select a return date for non-Free items.");
       return;
     }
-  
-    try {
-      // Convert dates to UTC+7
-      const borrowingDateInUTCPlus7 = convertToUTCPlus7(borrowingDate);
-      const returnDateInUTCPlus7 = convertToUTCPlus7(returnDate);
 
-      // Construct borrowing and return information per item
+    try {
+      const borrowingDateInUTCPlus7 = convertToUTCPlus7(borrowingDate);
+      const returnDateInUTCPlus7 = hasNonFreeItems ? convertToUTCPlus7(returnDate) : null;
+
       const orderItems = cartItems.map(item => ({
         ...item,
-        itemId: uuidv4(),  // Create unique item IDs
-        borrowingDate: borrowingDateInUTCPlus7,  // Convert to UTC+7
-        returnDate: returnDateInUTCPlus7,        // Convert to UTC+7
-        reason,                                  // Use the entered reason
+        itemId: uuidv4(),
+        borrowingDate: borrowingDateInUTCPlus7,
+        returnDate: item.category === "66cca9155fa68b084904d0d1" ? null : returnDateInUTCPlus7,
+        reason,
       }));
 
-      const orderData = {
-        orderItems,        // Pass the constructed order items with borrowing/return info
-      };
-  
+      const orderData = { orderItems };
+
       await createOrder(orderData).unwrap();
-  
       dispatch(clearCartItems());
-  
+
       Swal.fire({
         title: "Request Submitted",
         html: "Your request is being processed...",
@@ -83,11 +82,10 @@ export default function CartScreen() {
         },
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.timer) {
-          navigate("/profile2"); // Redirect to profile
+          navigate("/profile2");
         }
       });
-  
-      // Clear the form fields after submission
+
       setReason("");
       setBorrowingDate("");
       setReturnDate("");
@@ -98,41 +96,65 @@ export default function CartScreen() {
 
   const handleCancel = () => {
     navigate("/");
-  }
+  };
+  
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const categories = {
+    "66cca9155fa68b084904d0d1": "Free",
+    "66cca9325fa68b084904d0d6": "Item",
+    // เพิ่ม categoryId อื่น ๆ ตามต้องการ
+  };
 
   const today = format(new Date(), 'yyyy-MM-dd');
 
   return (
-    <div className="flex flex-col md:flex-row items-start mx-auto">
-      <div className="md:w-2/4 p-4">
-        <div className='content-menu justify-start '>
-          <Link to={'/'}>
-            <button className="bg-gray-800 text-white px-4 py-2 rounded-md mb-4">Back</button>
-          </Link>
-        </div>
-        {cartItems.length !== 0 ?
-          <div className="content-wrapper grid grid-cols-1 md:grid-cols-2 gap-4">
-            {cartItems.map(item => (
-              <div className='border border-gray-300 p-4 flex items-center' key={item._id}>
-                <div>
-                  <img src={item.image} alt={item.name} className='w-16 h-16 object-contain mr-4' />
-                  <h3 className='text-lg font-semibold'>{item.name}</h3>
-                  <p className='text-gray-600'>Quantity: {item.qty}</p>
-                  <button className='text-red-500 hover:text-red-700' onClick={() => handleDeleteItem(item._id)}>Remove</button>
-                </div>
-              </div>
-            ))}
-          </div> : (
-            <p className='content-wrapper text-gray-400 text-xl justify-start'>Your cart is empty.</p>
-          )}
-      </div>
+    <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+      <div className={`content-wrapper ${isSidebarOpen ? '' : 'sidebar-closed'}`}>
+        <div className="w-full max-w-6xl flex flex-col md:flex-row">
+          
+          {/* Left Section: Cart Items */}
+          <div className="md:w-2/3 p-6 bg-white ">
+            <div className="mb-4">
+              <Link to="/">
+                <button className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors duration-300">
+                  Back
+                </button>
+              </Link>
+            </div>
 
-      <div className='content-table'>
-        <div className="container mx-auto mt-8 mb-28 p-4 max-w-md">
+            {cartItems.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {cartItems.map(item => (
+                  <div className="bg-gray-30 shadow-md rounded-lg p-4 flex" key={item._id}>
+                    <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-lg mr-4" />
+                    <div>
+                      <h3 className="text-lg font-semibold mb-1">{item.name}</h3>
+                      <p className="text-gray-600 text-sm">Category: <span className="font-medium">{categories[item.category] || item.category}</span></p>
+                      <p className="text-gray-600 text-sm">Quantity: {item.qty}</p>
+                      <button
+                        className="mt-2 text-red-600 text-sm hover:text-red-800 transition duration-200"
+                        onClick={() => handleDeleteItem(item._id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">Your cart is empty.</p>
+            )}
+          </div>
+
+          {/* Right Section: Borrowing Information */}
+          <div className="mx-auto mt-8 mb-28 p-4 max-w-md">
           <div>
             <h2 className="text-xl font-semibold">Total Items: {totalItems}</h2>
           </div>
-          <h3 className="text-xl font-semibold">Borrowing Information</h3>
+          <h3 className="text-xl font-semibold mt-2">Borrowing Information</h3>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="reason" className="text-gray-700">
@@ -162,19 +184,22 @@ export default function CartScreen() {
               />
             </div>
 
-            <div className="mb-4">
-              <label htmlFor="returnDate" className="text-gray-700">
-                Return Date: MM/DD/YY
-              </label>
-              <input
-                type="date"
-                id="returnDate"
-                className="bg-white border border-gray-300 p-2 rounded-md mt-2 w-full uppercase"
-                value={returnDate}
-                onChange={e => setReturnDate(e.target.value)}
-                min={borrowingDate || today}
-              />
-            </div>
+            {/* Only show return date if there are non-free items */}
+            {hasNonFreeItems && (
+              <div className="mb-4">
+                <label htmlFor="returnDate" className="text-gray-700">
+                  Return Date: MM/DD/YY
+                </label>
+                <input
+                  type="date"
+                  id="returnDate"
+                  className="bg-white border border-gray-300 p-2 rounded-md mt-2 w-full uppercase"
+                  value={returnDate}
+                  onChange={e => setReturnDate(e.target.value)}
+                  min={borrowingDate || today}
+                />
+              </div>
+            )}
 
             <div className="flex justify-between">
               <button
@@ -193,6 +218,7 @@ export default function CartScreen() {
               </button>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>

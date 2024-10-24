@@ -26,9 +26,9 @@ const OrderSchema = mongoose.Schema(
       returnDate: { type: Date },
       canceledDate: { type: Date },
       reason: { type: String, required: true },
+      notificationSent: { type: Boolean, default: false },
       },
     ],
-    notificationSent: { type: Boolean, default: false },
   },
   {
     timestamps: true,

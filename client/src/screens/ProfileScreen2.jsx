@@ -161,7 +161,7 @@ export default function ProfileScreen() {
                 <div className="flex items-center gap-4">
                     <input
                         type="text"
-                        placeholder="Search..."
+                        placeholder="User name,Product"
                         className="border border-gray-300 p-2 rounded-lg shadow-sm w-full md:w-60"
                         value={keyword}
                         onChange={e => setKeyword(e.target.value)}
@@ -216,7 +216,7 @@ export default function ProfileScreen() {
                     ? new Date(item.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
                     : item.returnedDate 
                     ? new Date(item.returnedDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-                    : "Not returned This items."}
+                    : "Not return This items."}
                     
                 </td>
                                 <td className={`text-center px-7 py-3  text-center whitespace-nowrap  ${getStatusClass(item.status)}`}>{item.status}</td>

@@ -27,6 +27,7 @@ import ProductCreateScreen from './screens/admin/ProductCreateScreen.jsx'
 import OrderListScreen from './screens/admin/OrderListScreen.jsx'
 import ConfirmScreen from './screens/admin/ConfirmScreen.jsx'
 import ReturnScreen from './screens/admin/ReturnScreen.jsx'
+import NonScreen from './screens/admin/NonScreen.jsx'
 import BorrowingScreen from './screens/admin/BorrowingScreen.jsx'
 import CancelScreen from './screens/admin/CancelScreen.jsx'
 import ProductEditScreen from './screens/admin/ProductEditScreen.jsx'
@@ -66,6 +67,7 @@ const router = createBrowserRouter(
         <Route path='/admin/borrowing' element={<BorrowingScreen />} />
         <Route path='/admin/return' element={<ReturnScreen />} />
         <Route path='/admin/cancel' element={<CancelScreen />} />
+        <Route path='/admin/non' element={<NonScreen />} />
         <Route path='/admin/manageMessages' element={<ManageMessages/>} />
         <Route path='/admin/product/:id/edit' element={<ProductEditScreen />} />
         <Route path='/admin/add' element={<AddScreen />} />

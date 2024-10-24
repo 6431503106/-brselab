@@ -140,3 +140,17 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Header.css */
+.product-name {
+    transition: color 0.3s ease;
+}
+
+.product-name:hover {
+    color: #1d4ed8; /* Tailwind's blue-600 */
+}
+
+.product-card:hover {
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15); /* Extra hover shadow */
+    transform: scale(1.05);
+}

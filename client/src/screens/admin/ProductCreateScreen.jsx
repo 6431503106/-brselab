@@ -190,15 +190,6 @@ export default function ProductCreateScreen() {
                         >
                             Add Category
                         </button>
-                        {categories && categories.length > 0 && (
-                            <button
-                                type="button"
-                                className="bg-red-500 text-white py-2 px-4 rounded-md ml-2"
-                                onClick={() => deleteCategoryHandler(categories[0]._id)}
-                            >
-                                Delete Category
-                            </button>
-                        )}
                     </div>
                 </div>
 
