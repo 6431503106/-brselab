@@ -1,8 +1,7 @@
 import dotenv from 'dotenv';
-
 /* CONFIGURE ENV VARIABLES */
-dotenv.config();
 
+dotenv.config();
 const APP_PORT = process.env.APP_PORT ;
 const NODE_ENV = process.env.NODE_ENV ;
 const MONGODB_URI = process.env.MONGODB_URI ;

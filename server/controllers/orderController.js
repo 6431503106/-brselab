@@ -166,7 +166,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // 0 8 * * * Schedule the cron job to run daily at 8:00 AM,* * * * * every 1 min
-cron.schedule('* * * * *', () => {
+cron.schedule('0 8 * * *', () => {
   checkUpcomingReturnDates();
 });
 

@@ -13,13 +13,13 @@ import Swal from 'sweetalert2';
 Modal.setAppElement('#root');
 
 export default function OrderListScreen() {
+  const [keyword, setKeyword] = useState("");
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [keyword, setKeyword] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
-  const [filteredOrders, setFilteredOrders] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
 
   const { data: orders, isLoading, error, refetch } = useGetOrdersQuery();
@@ -45,26 +45,25 @@ export default function OrderListScreen() {
 
   const handleSearchFilter = () => {
     const searchValue = keyword.toLowerCase();
-    const filteredUsers = users?.filter(user =>
-      user.name.toLowerCase().includes(searchValue) || user.email.toLowerCase().includes(searchValue)
-    );
     const filtered = orders.flatMap(order =>
       order.orderItems
         .filter(item =>
-          (item.name.toLowerCase().includes(searchValue) || item._id.toLowerCase().includes(searchValue)) &&
-          item.status === 'Confirm'
+          item.name.toLowerCase().includes(searchValue) ||  // Filter by product name
+          item._id.toLowerCase().includes(searchValue) ||   // Filter by item ID
+          order.user?.name.toLowerCase().includes(searchValue) // Filter by user name
         )
+        .filter(item => item.status === 'Confirm') // Only include Pending items
         .map(item => ({
           ...item,
-          order: order
+          order: order // Attach the order to each item
         }))
     );
     setFilteredOrders(filtered);
-    setFilteredUsers(filteredUsers || []);
   };
 
   const paginate = pageNumber => setPage(pageNumber);
 
+  // Pagination handling
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -221,7 +220,7 @@ export default function OrderListScreen() {
         <div className="flex items-center gap-4">
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search..User name, Product"
             className="border border-gray-300 p-2 rounded-lg shadow-sm w-full md:w-60"
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
@@ -263,7 +262,7 @@ export default function OrderListScreen() {
       <td className='px-7 py-3 whitespace-nowrap border'>
         {item.returnDate
           ? new Date(item.returnDate).toLocaleDateString('us', { year: 'numeric', month: 'long', day: '2-digit' })
-          : 'N/A'}
+          : 'Not return This items.'}
       </td>
       <td className={`px-7 py-3 whitespace-nowrap border ${item.status === 'Confirm' ? 'text-green-500' : ''}`}>{item.status}</td>
       <td className='px-7 py-3 whitespace-nowrap border'>

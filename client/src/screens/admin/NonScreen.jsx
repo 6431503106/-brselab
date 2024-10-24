@@ -45,26 +45,25 @@ export default function OrderListScreen() {
 
   const handleSearchFilter = () => {
     const searchValue = keyword.toLowerCase();
-    const filteredUsers = users?.filter(user =>
-      user.name.toLowerCase().includes(searchValue) || user.email.toLowerCase().includes(searchValue)
-    );
     const filtered = orders.flatMap(order =>
       order.orderItems
         .filter(item =>
-          (item.name.toLowerCase().includes(searchValue) || item._id.toLowerCase().includes(searchValue)) &&
-          item.status === 'Non-returnable'
+          item.name.toLowerCase().includes(searchValue) ||  // Filter by product name
+          item._id.toLowerCase().includes(searchValue) ||   // Filter by item ID
+          order.user?.name.toLowerCase().includes(searchValue) // Filter by user name
         )
+        .filter(item => item.status === 'Non-returnable') // Only include Pending items
         .map(item => ({
           ...item,
-          order: order
+          order: order // Attach the order to each item
         }))
     );
     setFilteredOrders(filtered);
-    setFilteredUsers(filteredUsers || []);
   };
 
   const paginate = pageNumber => setPage(pageNumber);
 
+  // Pagination handling
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -221,7 +220,7 @@ export default function OrderListScreen() {
         <div className="flex items-center gap-4">
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search..User name, Product"
             className="border border-gray-300 p-2 rounded-lg shadow-sm w-full md:w-60"
             value={keyword}
             onChange={e => setKeyword(e.target.value)}

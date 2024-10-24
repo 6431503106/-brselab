@@ -108,7 +108,7 @@ export default function ProductListScreen() {
             <div className="flex items-center gap-4">
                     <input
                         type="text"
-                        placeholder="Search..."
+                        placeholder="Search..User name, Product"
                         className="border border-gray-300 p-2 rounded-lg shadow-sm w-full md:w-60"
                         value={keyword}
                         onChange={e => setKeyword(e.target.value)}
