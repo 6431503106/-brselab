@@ -52,27 +52,44 @@ app.use("/api/general", generalRoutes)
 app.use('/api/admin', adminRoutes)
 
 // Resolve __dirname in ES6
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+/*const __filename = fileURLToPath(import.meta.url);*/
+/*const __dirname = path.dirname(__filename);*/
 
 // Serve static files from /uploads
+const __dirname = path.resolve()
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
-// Serve static files in production
 if (process.env.NODE_ENV === "production") {
-  // Serve client static files from /client/dist
+  const __dirname = path.resolve()
+  app.use("/uploads", express.static(path.join(__dirname, "uploads")))
   app.use(express.static(path.join(__dirname, "/client/dist")))
-
-  // Send all requests to index.html for React routing
-  app.get("*", (req, res) =>
+  app.use("*", (req, res) =>
     res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"))
   )
 } else {
-  // Development route for the API
+  app.use("/uploads", express.static(path.join(__dirname, "uploads")))
   app.get("/", (req, res) => {
     res.send("Api is running...")
   })
 }
+
+/*const __dirname = path.resolve()
+app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+
+// Serve static files in production
+  if (process.env.NODE_ENV === "production") {
+    const __dirname = path.resolve()
+    app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+    app.use(express.static(path.join(__dirname, "/client/dist")))
+    app.use("*", (req, res) =>
+      res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"))
+    )
+  } else {
+    app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+    app.get("/", (req, res) => {
+      res.send("Api is running...")
+    })
+  }*/
 
 // Error handling middleware
 app.use(notFound)
