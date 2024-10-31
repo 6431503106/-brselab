@@ -1,0 +1,156 @@
+
+.menu {
+    width: 250px;
+    max-width: 250px;
+    display: grid;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto; /* ทำให้สามารถเลื่อนลงได้เมื่อเนื้อหาเกิน */
+}
+
+.sidebar.open {
+    transform: translateX(250px); /* เปลี่ยนค่า translateX เมื่อเปิด sidebar */
+}
+
+.sidebar.closed {
+    transform: translateX(0px); /* เปลี่ยนค่า translateX เมื่อปิด sidebar */
+}
+
+.content-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 1px;
+    background-color: white;
+    margin-left: 250px;
+    transition: margin-left 0.5s ease; /* ลบ transition ที่ไม่จำเป็น */
+}
+.content-table {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 1px;
+    background-color: white;
+    margin-left: 250px;
+    transition: margin-left 0.5s ease; /* ลบ transition ที่ไม่จำเป็น */
+}
+.content-menu {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 1px;
+    background-color: white;
+    margin-left: 250px;
+    transition: margin-left 0.5s ease; /* ลบ transition ที่ไม่จำเป็น */
+}
+
+.footer-wrapper {
+    transition: margin-left 0.5s ease; /* ลบ transition ที่ไม่จำเป็น */
+}
+
+.main-header {
+    transition: margin-left 0.5s ease; /* ลบ transition ที่ไม่จำเป็น */
+}
+
+.header-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+}
+
+.main-header {
+    width: auto;
+    background-color: #ececec;
+    z-index: 1100;
+    position: relative;
+    top: 0;
+    right: 0;
+    transition: margin-left 0.5s ease; /* ลบ transition ที่ไม่จำเป็น */
+}
+
+.footer-wrapper {
+    background-color: rgb(16, 18, 40);
+    margin-left: 250px; /* เริ่มต้นให้ footer มี margin-left เท่ากับความกว้างของ sidebar */
+    transition: margin-left 0.5s ease; /* เพิ่ม transition เมื่อมีการเปลี่ยนแปลง margin-left */
+}
+
+.main-header {
+    
+    margin-left: 250px; /* เริ่มต้นให้ Navbar มี margin-left เท่ากับความกว้างของ sidebar */
+    transition: margin-left 0.5s ease; /* เพิ่ม transition เมื่อมีการเปลี่ยนแปลง margin-left */
+}
+
+.main-header.sidebar-closed {
+    margin-left: 80px; /* ปรับ margin-left เมื่อ sidebar ถูกปิด */
+}
+
+.footer-wrapper.sidebar-closed {
+    margin-left: 80px; /* ปรับ margin-left เมื่อ sidebar ถูกปิด */
+}
+
+.content-table.sidebar-closed {
+    margin-left: 80px; /* ปรับ margin-left เมื่อ sidebar ถูกปิด */
+}
+.content-menu.sidebar-closed {
+    margin-left: 80px; /* ปรับ margin-left เมื่อ sidebar ถูกปิด */
+}
+.content-wrapper.sidebar-closed {
+    margin-left: 80px; /* ปรับ margin-left เมื่อ sidebar ถูกปิด */
+}
+.brand-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px;
+    text-align: center;
+}
+
+.brand-image {
+    width: 60px;
+    height: 60px;
+
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.8); /* เพิ่มความเข้มและขนาดของเงา */
+    border-radius: 50%; /* เพิ่มขอบมนเพื่อให้เป็นวงกลม */
+
+}
+
+.brand-text {
+    font-size: 24px;
+    font-weight: bold;
+    
+}
+.hide {
+    display: none;
+    transition: 0.3s ease; /* เพิ่ม transition เมื่อมีการเปลี่ยนแปลง margin-left */
+}
+.nav-link,
+.ant-menu-item > a,
+.ant-dropdown-menu-item > a {
+    cursor: pointer;
+}
+.drop {
+    background-color: blue;
+}
+.product-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* Number of lines to show */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Header.css */
+.product-name {
+    transition: color 0.3s ease;
+}
+
+.product-name:hover {
+    color: #1d4ed8; /* Tailwind's blue-600 */
+}
+
+.product-card:hover {
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15); /* Extra hover shadow */
+    transform: scale(1.05);
+}
